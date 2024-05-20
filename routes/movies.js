@@ -32,3 +32,5 @@ router.get("/", (req, res) => {
     })
     .catch((err) => console.error("error:" + err));
 });
+
+module.exports = router;
