@@ -2,7 +2,10 @@ const mongoose = require('mongoose');
 
 const newsletterSchema = mongoose.Schema({
     date : Date,
-    content: String,
+    content: {
+        en:String,
+        fr:String
+    },
     images:[String],
     receivedBy : [{type: mongoose.Schema.Types.ObjectId, ref:"users"}], 
 })

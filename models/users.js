@@ -2,15 +2,21 @@ const mongoose = require("mongoose");
 
 const likeMovieSchema = mongoose.Schema({
   movie: { type: mongoose.Schema.Types.ObjectId, ref: "movies" },
-  mood : String,
-  note : Number,
+  mood : {
+    en:String,
+    fr:String
+  },
+  note: Number,
 });
 
 const userSchema = mongoose.Schema({
   username: String,
   email: String,
   age: Number,
-  genre: String,
+  genre: {
+    en:String,
+    fr:String
+  },
   platforms: [String],
   newsletter: Boolean,
   likeMovies: [likeMovieSchema],
