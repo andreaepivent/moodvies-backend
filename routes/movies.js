@@ -250,6 +250,6 @@ router.get("/fetchMovies", async (req, res) => {
       res.json({ result: true, movies: data.results });
     })
     .catch((err) => console.error("error:" + err));
-}); */
+});
 
 module.exports = router;
