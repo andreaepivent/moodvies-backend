@@ -14,7 +14,7 @@ const recommendedMoviesSchema = mongoose.Schema({
 const userSchema = mongoose.Schema({
   username: String,
   email: String,
-  age: Number,
+  birthday: Date,
   genre: {
     en:String,
     fr:String
