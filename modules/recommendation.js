@@ -3,32 +3,32 @@ const User = require("../models/users");
 
 const moodComplements = {
   admiration: "disapproval",
-  amusement: "boredom",
-  anger: "calm",
-  annoyance: "patience",
+  amusement: "annoyance",
+  anger: "relief",
+  annoyance: "amusement",
   approval: "disapproval",
-  caring: "indifference",
-  confusion: "clarity",
-  curiosity: "disinterest",
-  desire: "apathy",
-  disappointment: "satisfaction",
+  caring: "disgust",
+  confusion: "realization",
+  curiosity: "indifference",
+  desire: "disgust",
+  disappointment: "joy",
   disapproval: "approval",
-  disgust: "acceptance",
-  embarrassment: "confidence",
-  excitement: "calm",
-  fear: "bravery",
-  gratitude: "ingratitude",
+  disgust: "admiration",
+  embarrassment: "pride",
+  excitement: "nervousness",
+  fear: "excitement",
+  gratitude: "disappointment",
   grief: "joy",
   joy: "sadness",
-  love: "hate",
-  nervousness: "confidence",
-  optimism: "pessimism",
-  pride: "humility",
-  realization: "ignorance",
-  relief: "stress",
-  remorse: "satisfaction",
+  love: "anger",
+  nervousness: "excitement",
+  optimism: "disappointment",
+  pride: "embarrassment",
+  realization: "confusion",
+  relief: "anger",
+  remorse: "pride",
   sadness: "joy",
-  surprise: "expectation",
+  surprise: "realization"
 };
 
 // Fonction pour récupérer le mood complémentaire
@@ -37,8 +37,8 @@ const getComplementaryMood = (mood) => {
 };
 
 // Fonction pour recommander des films
-const recommendMovies = async (userId, userMood, option) => {
-  const user = await User.findById(userId).populate("recommendedMovies.movie");
+const recommendMovies = async (token, userMood, option) => {
+  const user = await User.findOne({token}).populate("recommendedMovies.movie");
   if (!user) {
     throw new Error("User not found");
   }
