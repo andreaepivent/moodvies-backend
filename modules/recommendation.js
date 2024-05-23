@@ -37,8 +37,8 @@ const getComplementaryMood = (mood) => {
 };
 
 // Fonction pour recommander des films
-const recommendMovies = async (userId, userMood, option) => {
-  const user = await User.findById(userId).populate("recommendedMovies.movie");
+const recommendMovies = async (token, userMood, option) => {
+  const user = await User.findOne({token}).populate("recommendedMovies.movie");
   if (!user) {
     throw new Error("User not found");
   }
