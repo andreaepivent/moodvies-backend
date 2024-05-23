@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const { recommendMovies } = require('./movieFunctions');
+const { recommendMovies } = require('../modules/recommendation');
 
 router.post('/', async (req, res) => {
     const { userMood, option } = req.body;
@@ -10,7 +10,7 @@ router.post('/', async (req, res) => {
   
     try {
       const recommendations = await recommendMovies(userMood, option);
-      res.json(recommendations);
+      res.json({result: true, recommendations});
     } catch (error) {
       console.error(error);
       res.status(500).send('Error recommending movies');

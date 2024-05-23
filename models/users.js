@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const likeMovieSchema = mongoose.Schema({
+const recommendedMoviesSchema = mongoose.Schema({
   movie: { type: mongoose.Schema.Types.ObjectId, ref: "movies" },
   mood : {
     en:String,
@@ -21,7 +21,7 @@ const userSchema = mongoose.Schema({
   },
   platforms: [String],
   newsletter: Boolean,
-  likeMovies: [likeMovieSchema],
+  recommendedMovies: [recommendedMoviesSchema],
 });
 
 const User = mongoose.model("users", userSchema);

@@ -48,19 +48,16 @@ const updateMood = async (movieId) => {
     body: JSON.stringify({ synopsis: movie.synopsis.en }),
   });
 
-  // On récupère l'émotion retourné par le modèle, si c'est neutre, on prend la deuxième émotion la plus probable
+  // On récupère l'émotion retourné par le modèle
   const data = await response.json();
   let mood = data.emotion;
-  if (mood === "neutral" && data.secondary_emotion) {
-    mood = data.secondary_emotion;
-  }
 
   // Mise à jour du mood dans la BDD
   Movie.updateOne({_id:movieId}, {mood: {en: mood, fr: moodTranslations[mood]}}).then();
 
 };
 
-// Route pour mettre à jour l'humeur de tous les films
+// Route pour mettre à jour le mood de tous les films dans la BDD
 router.get("/", async (req, res) => {
   try {
     let i = 0;
@@ -84,7 +81,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Route pour obtenir les valeurs distinctes de mood et leur nombre d'occurrences
+// Route pour obtenir les valeurs distinctes des mood des films dans notre bdd et leur nombre d'occurrences
 router.get('/distinctMoods', async (req, res) => {
     try {
       const distinctMoodsEn = await Movie.aggregate([
@@ -103,20 +100,6 @@ router.get('/distinctMoods', async (req, res) => {
     } catch (error) {
       console.error('Failed to fetch distinct moods', error);
       res.status(500).send('An error occurred while fetching distinct moods');
-    }
-  });
-
-
-router.get("/:movieId", async (req, res) => {
-    let { movieId } = req.params;
-  
-    try {
-      await updateMood(movieId);
-      console.log(`Updated mood`);
-      res.status(200).send(`Updated mood for movie with ID: ${movieId}`);
-    } catch (error) {
-      console.error(`Failed to update mood for movie`, error);
-      res.status(500).send("Failed to update mood for movie");
     }
   });
 

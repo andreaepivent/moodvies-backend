@@ -9,6 +9,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var moviesRouter = require('./routes/movies');
 var moodRouter = require('./routes/updateMood');
+var recommendationRouter = require('./routes/recommendation');
 
 var app = express();
 const cors = require("cors");
@@ -40,5 +41,6 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/movies', moviesRouter);
 app.use('/updateMood', moodRouter);
+app.use('/recommendation', recommendationRouter);
 
 module.exports = app;
