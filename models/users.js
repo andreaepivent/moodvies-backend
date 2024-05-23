@@ -6,7 +6,9 @@ const likeMovieSchema = mongoose.Schema({
     en:String,
     fr:String
   },
-  note: Number,
+  note: {type: Number, default:null},
+  date: Date,
+  rank: Number,
 });
 
 const userSchema = mongoose.Schema({
