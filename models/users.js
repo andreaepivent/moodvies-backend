@@ -14,14 +14,13 @@ const recommendedMoviesSchema = mongoose.Schema({
 const userSchema = mongoose.Schema({
   username: String,
   email: String,
+  password: String,
   birthday: Date,
-  genre: {
-    en:String,
-    fr:String
-  },
+  genre: String,
   platforms: [String],
   newsletter: Boolean,
   recommendedMovies: [recommendedMoviesSchema],
+  token: String
 });
 
 const User = mongoose.model("users", userSchema);
