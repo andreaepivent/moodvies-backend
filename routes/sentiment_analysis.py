@@ -14,7 +14,8 @@ def sentiment_analysis():
     results = classifier(synopsis)
     emotion_scores = sorted(results[0], key=lambda x: x['score'], reverse=True)
     primary_emotion = emotion_scores[0]['label']
-    primary_emotion = emotion_scores[1]['label'] if primary_emotion == 'neutral' and len(emotion_scores) > 1 else None
+    if primary_emotion == 'neutral' and len(emotion_scores) > 1:
+        primary_emotion = emotion_scores[1]['label']
     return jsonify({'emotion': primary_emotion, 'scores': emotion_scores})
 
 if __name__ == '__main__':

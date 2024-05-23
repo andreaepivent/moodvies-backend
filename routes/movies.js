@@ -251,5 +251,5 @@ router.get("/fetchMovies", async (req, res) => {
     })
     .catch((err) => console.error("error:" + err));
 });
-
+*/
 module.exports = router;
