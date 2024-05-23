@@ -4,6 +4,7 @@ const { recommendMovies } = require("../modules/recommendation");
 const { moodTranslations } = require("../modules/updateMood");
 const User = require("../models/users");
 
+// Recommandation d'un film en fonction du mood de l'utilisateur et de l'option choisie
 router.post("/", async (req, res) => {
   const { token, userMood, option } = req.body;
   const timestamp = Date.now();
