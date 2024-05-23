@@ -42,6 +42,7 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Laiser un avis sur un film recommandé
 router.post("/addFeedback", async (req, res) => {
   let { token, note, movieId } = req.body;
   note = Number(note);
