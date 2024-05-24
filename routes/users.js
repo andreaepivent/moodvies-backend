@@ -16,7 +16,7 @@ function validateEmail(email) {
 // Fonction pour valider le format du mot de passe
 function validatePassword(password) {
   const passwordRegex =
-    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/; // /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; //
   return passwordRegex.test(password);
 }
 
