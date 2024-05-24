@@ -4,9 +4,9 @@ function checkBody(body, keys) {
     let isValid = true;
   
     for (const field of keys) {
-      if (!body[field] || body[field].trim === '') {
+      if (!body[field] || body[field].trim() === '') {
         isValid = false;
-        break; // Sort de la boucle dès qu'un champ manquant ou vide est trouvé
+        break; 
       }
     }
   
