@@ -13,6 +13,13 @@ function validateEmail(email) {
   return emailRegex.test(email);
 }
 
+// Fonction pour valider le format du mot de passe
+function validatePassword(password) {
+  const passwordRegex =
+    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/; // /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return passwordRegex.test(password);
+}
+
 // Route POST pour l'inscription des utilisateurs
 router.post("/signup", async (req, res) => {
   console.log(req.body); // Ajouter cette ligne pour loguer le corps de la requête
@@ -23,6 +30,14 @@ router.post("/signup", async (req, res) => {
   // Valide le format de l'email
   if (!validateEmail(req.body.email)) {
     return res.json({ result: false, error: "Invalid email format" });
+  }
+  // Valide le format du mot de passe
+  if (!validatePassword(req.body.password)) {
+    return res.json({
+      result: false,
+      error:
+        "Password must be at least 10 characters long and include at least one uppercase letter and one number",
+    });
   }
 
   try {
@@ -41,7 +56,7 @@ router.post("/signup", async (req, res) => {
     // Hash le mot de passe avec bcrypt en utilisant un sel de 10
     const hash = bcrypt.hashSync(req.body.password, 10);
 
-    console.log(new Date(req.body.birthday))
+    console.log(new Date(req.body.birthday));
 
     // Crée un nouvel utilisateur avec les informations fournies
     const newUser = new User({
@@ -66,5 +81,3 @@ router.post("/signup", async (req, res) => {
 });
 
 module.exports = router;
-
-
