@@ -15,18 +15,34 @@ function validateEmail(email) {
 
 // Fonction pour valider le format du mot de passe
 function validatePassword(password) {
-  const passwordRegex =
-    /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; //
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // Mot de passe doit avoir au moins 8 caractères, une lettre et un chiffre
   return passwordRegex.test(password);
+}
+
+// Fonction pour valider le format du username
+function validateUsername(username) {
+  const usernameRegex = /^[A-Za-z0-9]+$/;
+  return usernameRegex.test(username);
 }
 
 // Route POST pour l'inscription des utilisateurs
 router.post("/signup", async (req, res) => {
+
   console.log(req.body); // Ajouter cette ligne pour loguer le corps de la requête
+
   // Vérifie si les champs requis sont présents et non vides dans le corps de la requête
   if (!checkBody(req.body, ["username", "email", "password", "birthday"])) {
     return res.json({ result: false, error: "Missing or empty fields" }); // Renvoie une réponse JSON avec une erreur si des champs sont manquants ou vides
   }
+
+  // Valide le format du username
+  if (!validateUsername(req.body.username)) {
+    return res.json({
+      result: false,
+      error: "Invalid username format. Only letters and numbers are allowed.",
+    });
+  }
+
   // Valide le format de l'email
   if (!validateEmail(req.body.email)) {
     return res.json({ result: false, error: "Invalid email format" });
@@ -80,7 +96,6 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-
 // Route POST pour la connexion des utilisateurs
 router.post("/signin", async (req, res) => {
   try {
@@ -111,32 +126,23 @@ router.post("/signin", async (req, res) => {
     }
 
     // Si l'authentification réussit, renvoie le token et les informations de l'utilisateur
-    res
-      .status(200)
-      .json({
-        result: true,
-        token: user.token,
-      });
+    res.status(200).json({
+      result: true,
+      token: user.token,
+    });
   } catch (error) {
     console.error("Signin error:", error);
     res.status(500).json({ result: false, error: "Internal server error" });
   }
 });
 
-
 // Modification du profil pour l'utilisateur
-router.put("/editProfile", async (req, res) => { 
-
-})
+router.put("/editProfile", async (req, res) => {});
 
 // Ajout d'une plateforme pour l'utilisateur
-router.post("/addPlatform", async (req, res) => { 
-
-})
+router.post("/addPlatform", async (req, res) => {});
 
 // Suppression d'une plateforme pour l'utilisateur
-router.delete("/deletePlatform", async (req, res) => { 
-  
-})
+router.delete("/deletePlatform", async (req, res) => {});
 
 module.exports = router;
