@@ -80,7 +80,7 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// Modification du profil pour l'utilisateur
+// Modification du profil de l'utilisateur
 router.put("/editProfile", async (req, res) => { 
 
 })
