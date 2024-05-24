@@ -80,4 +80,19 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+// Modification du profil pour l'utilisateur
+router.put("/editProfile", async (req, res) => { 
+
+})
+
+// Ajout d'une plateforme pour l'utilisateur
+router.post("/addPlatform", async (req, res) => { 
+
+})
+
+// Suppression d'une plateforme pour l'utilisateur
+router.delete("/deletePlatform", async (req, res) => { 
+  
+})
+
 module.exports = router;
