@@ -80,6 +80,50 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+
+// Route POST pour la connexion des utilisateurs
+router.post("/signin", async (req, res) => {
+  try {
+    // Vérifie si les champs requis sont présents et non vides dans le corps de la requête
+    if (!checkBody(req.body, ["username", "password"])) {
+      return res
+        .status(400)
+        .json({ result: false, error: "Missing or empty fields" });
+    }
+    // Recherche de l'utilisateur par nom d'utilisateur (insensible à la casse)
+    const user = await User.findOne({
+      username: { $regex: new RegExp(req.body.username, "i") },
+    });
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ result: false, error: "User not found or wrong password" });
+    }
+
+    // Comparaison du mot de passe fourni avec le mot de passe haché dans la base de données
+    const passwordMatch = bcrypt.compareSync(req.body.password, user.password);
+
+    if (!passwordMatch) {
+      return res
+        .status(401)
+        .json({ result: false, error: "User not found or wrong password" });
+    }
+
+    // Si l'authentification réussit, renvoie le token et les informations de l'utilisateur
+    res
+      .status(200)
+      .json({
+        result: true,
+        token: user.token,
+      });
+  } catch (error) {
+    console.error("Signin error:", error);
+    res.status(500).json({ result: false, error: "Internal server error" });
+  }
+});
+
+
 // Modification du profil pour l'utilisateur
 router.put("/editProfile", async (req, res) => { 
 
