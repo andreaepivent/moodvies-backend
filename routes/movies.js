@@ -21,10 +21,12 @@ const getOptions = {
   },
 }; */
 
+// autre adresse pour le fetch : https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=en-US&sort_by=popularity.desc&page=${page}
+
 // fonction fetch pour récupérer l'id des films et toute la discoverie
 const getDiscoverMovies = async (page) => {
   const response = await fetch(
-    `https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=en-US&sort_by=popularity.desc&page=${page}`,
+    `https://api.themoviedb.org/3/movie/popular?page=${page}`,
     getOptions
   );
   if (!response.ok) {
