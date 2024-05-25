@@ -237,7 +237,8 @@ router.get("/fetchMovies", async (req, res) => {
       }
     }
 
-    res.json({result: true});
+    res.json({result: true})
+
   } catch (error) {
     console.error("Fetch error:", error);
     res.json({ result: false, error: error.message });
