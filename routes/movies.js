@@ -198,6 +198,7 @@ router.get("/fetchMovies", async (req, res) => {
             fr: movieDetailsFr.title,
           },
           directors,
+          duration: movieDetailsFr.runtime, 
           synopsis: {
             en: movieDetailsEn.overview,
             fr: movieDetailsFr.overview,
