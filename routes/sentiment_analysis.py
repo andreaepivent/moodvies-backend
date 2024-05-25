@@ -13,10 +13,14 @@ def sentiment_analysis():
     synopsis = data['synopsis']
     results = classifier(synopsis)
     emotion_scores = sorted(results[0], key=lambda x: x['score'], reverse=True)
-    primary_emotion = emotion_scores[0]['label']
-    if primary_emotion == 'neutral' and len(emotion_scores) > 1:
-        primary_emotion = emotion_scores[1]['label']
-    return jsonify({'emotion': primary_emotion, 'scores': emotion_scores})
+    
+    # Filter out 'neutral' emotion
+    filtered_emotions = [emotion for emotion in emotion_scores if emotion['label'] != 'neutral']
+    
+    # Get the top 3 emotions
+    primary_emotions = [emotion['label'] for emotion in filtered_emotions[:3]]
+    
+    return jsonify({'emotion': primary_emotions, 'scores': emotion_scores})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

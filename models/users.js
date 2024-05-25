@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const recommendedMoviesSchema = mongoose.Schema({
   movie: { type: mongoose.Schema.Types.ObjectId, ref: "movies" },
-  mood : {
+  userMood : {
     en:String,
     fr:String
   },

@@ -37,10 +37,9 @@ const movieSchema = mongoose.Schema({
     en: [String],
     fr: [String],
   },
-  mood: {
-    type: Map,
-    of: String,
-    default: { en: "neutral", fr: "neutre" },
+  moods: {
+    type: [String],
+    default: []
   },
 });
 
