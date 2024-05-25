@@ -38,8 +38,8 @@ const movieSchema = mongoose.Schema({
     fr: [String],
   },
   moods: {
-    type: [String],
-    default: []
+    en: { type: [String], default: []},
+    fr: { type: [String], default: []},
   },
 });
 
