@@ -13,6 +13,13 @@ const templatePath = path.join(__dirname, "../templates/movieNewsletter.hbs");
 const source = fs.readFileSync(templatePath, "utf8");
 const template = handlebars.compile(source);
 
+
+// Fonction Regex pour valider le format de l'email
+function validateEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
 // Route pour envoyer un email
 router.post("/send-email", async (req, res) => {
   try {
@@ -20,10 +27,8 @@ router.post("/send-email", async (req, res) => {
     const email = req.body.email;
 
     // Vérifier que l'email est fourni
-    if (!email) {
-      return res
-        .status(400)
-        .json({ message: "Adresse email est requise pour s'abonner" });
+    if (!validateEmail(email)) {
+      return res.status(400).json({ message: "Adresse email invalide" });
     }
 
     // Récupérer le film par id_tmdb depuis la base de données
@@ -34,7 +39,7 @@ router.post("/send-email", async (req, res) => {
     }
 
     console.log("Film trouvé:", movie.title.en); // Vérifier que les données du film sont correctes
-    console.log("Template compilé:", template({ movie, email })); // Vérifier le HTML généré
+    // console.log("Template compilé:", template({ movie, email })); // Vérifier le HTML généré
 
     // Définir les options pour l'email
     const mailOptions = {
@@ -64,13 +69,13 @@ router.post("/send-email", async (req, res) => {
     res
       .status(200)
       .json({
-        message: "Email sent successfully and subscribed to newsletter",
+        message: "Courriel envoyé avec succès et inscription à la newsletter",
       });
   } catch (error) {
-    console.error("Error sending email or updating subscription:", error);
+    console.error("Erreur lors de l'envoi d'un courriel ou de la mise à jour de la newsletter:", error);
     res
       .status(500)
-      .json({ message: "Failed to send email or update subscription" });
+      .json({ message: "Échec de l'envoi du courrier électronique ou de la mise à jour de l'abonnement" });
   }
 });
 
