@@ -76,7 +76,7 @@ router.post("/signup", async (req, res) => {
       username: req.body.username,
       email: req.body.email,
       birthday: new Date(req.body.birthday),
-      genre: req.body.genre,
+      gender: req.body.gender,
       password: hash,
       token: uid2(32), // Génère un token unique
     });

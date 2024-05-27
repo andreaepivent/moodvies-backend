@@ -21,6 +21,7 @@
     "node-fetch": "2",
     "nodemailer": "^6.9.13",
     "openai": "^4.47.1",
+    "socket.io": "^4.7.5",
     "uid2": "^1.0.0"
   }
 }
