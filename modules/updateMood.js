@@ -1,3 +1,4 @@
+const Movie = require("../models/movies");
 const moodTranslations = {
   admiration: "admiration",
   amusement: "amusement",
@@ -45,12 +46,12 @@ const updateMood = async (movieId) => {
 
   // On récupère l'émotion retourné par le modèle
   const data = await response.json();
-  let mood = data.emotion;
+  let moods = data.emotion;
 
   // Mise à jour du mood dans la BDD
   Movie.updateOne(
     { _id: movieId },
-    { mood: { en: mood, fr: moodTranslations[mood] } }
+    { moods: { en: moods, fr: moods.map(mood => moodTranslations[mood] || mood) } }
   ).then();
 };
 
