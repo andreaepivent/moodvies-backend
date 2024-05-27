@@ -245,6 +245,37 @@ router.get("/fetchMovies", async (req, res) => {
   }
 });
 
+// Route pour supprimer les doublons
+router.delete('/remove-duplicates', async (req, res) => {
+  try {
+    // Trouver les doublons en se basant sur l'id_tmdb
+    const duplicates = await Movie.aggregate([
+      {
+        $group: {
+          _id: '$id_tmdb',
+          count: { $sum: 1 },
+          docs: { $push: '$_id' }
+        }
+      },
+      {
+        $match: {
+          count: { $gt: 1 }
+        }
+      }
+    ]);
+
+    // Parcourir les doublons et en supprimer tous sauf un
+    for (let duplicate of duplicates) {
+      const idsToDelete = duplicate.docs.slice(1); // Conserver le premier document et supprimer les autres
+      await Movie.deleteMany({ _id: { $in: idsToDelete } });
+    }
+
+    res.status(200).send('Duplicates removed successfully');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error removing duplicates');
+  }
+});
 
 //------------------------------//
 /* router.get("/", (req, res) => {
