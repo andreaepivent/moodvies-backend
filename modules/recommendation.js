@@ -28,7 +28,7 @@ const moodComplements = {
   relief: "anger",
   remorse: "pride",
   sadness: "joy",
-  surprise: "realization"
+  surprise: "realization",
 };
 
 // Fonction pour récupérer le mood complémentaire
@@ -38,15 +38,17 @@ const getComplementaryMood = (mood) => {
 
 // Fonction pour recommander des films
 const recommendMovies = async (token, userMood, option) => {
-  const user = await User.findOne({token}).populate("recommendedMovies.movie");
+  const user = await User.findOne({ token }).populate(
+    "recommendedMovies.movie"
+  );
   if (!user) {
     throw new Error("User not found");
   }
 
   // On ne veut pas recommander un film qui a déjà été recommandé à cet utilisateur
-  const recommendedMovieIds = user.recommendedMovies.map((rec) =>
-    rec.movie._id.toString()
-  );
+  const recommendedMovieIds = (user.recommendedMovies || [])
+    .map((rec) => (rec.movie ? rec.movie.toString() : null))
+    .filter((id) => id !== null);
 
   let movies = await Movie.find();
   let recommendations = [];
@@ -57,15 +59,15 @@ const recommendMovies = async (token, userMood, option) => {
   if (option === "similarity") {
     recommendations = movies.filter(
       (movie) =>
-        movie.mood.get("en") === userMood &&
-        !recommendedMovieIds.includes(movie._id.toString())
+        movie.moods.en.includes(userMood) &&
+        !recommendedMovieIds.includes(movie._id.toString() && movie.vote_count >= 100)
     );
   } else if (option === "complementarity") {
     const complementaryMood = getComplementaryMood(userMood);
     recommendations = movies.filter(
       (movie) =>
-        movie.mood.get("en") === complementaryMood &&
-        !recommendedMovieIds.includes(movie._id.toString())
+        movie.moods.en.includes(complementaryMood) &&
+        !recommendedMovieIds.includes(movie._id.toString() && movie.vote_count >= 100)
     );
   }
 
