@@ -4,51 +4,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f9f9f9;
-        color: #333;
-      }
-      .container {
-        width: 90%;
-        max-width: 600px;
-        margin: 40px auto;
-        background-color: #fff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      }
-      h1 {
-        font-size: 24px;
-        margin-bottom: 20px;
-        color: #2c3e50;
-        border-bottom: 2px solid #2c3e50;
-        padding-bottom: 10px;
-      }
-      .movie {
-        margin-bottom: 30px;
-      }
-      .movie img {
-        max-width: 100%;
-        border-radius: 8px;
-      }
-      .movie h2 {
-        font-size: 20px;
-        margin: 10px 0 5px;
-        color: #34495e;
-      }
-      .movie p {
-        font-size: 14px;
-        line-height: 1.6;
-        color: #555;
-      }
-      .movie .info {
-        font-size: 14px;
-        color: #888;
-        margin-top: 5px;
-      }
+      body { font-family: Arial, sans-serif; margin: 0; padding: 0;
+      background-color: #f9f9f9; color: #333; } .container { width: 90%;
+      max-width: 600px; margin: 40px auto; background-color: #fff; padding:
+      20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); } h1 {
+      font-size: 24px; margin-bottom: 20px; color: #2c3e50; border-bottom: 2px
+      solid #2c3e50; padding-bottom: 10px; } .movie { margin-bottom: 30px; }
+      .movie img { max-width: 100%; border-radius: 8px; } .movie h2 { font-size:
+      20px; margin: 10px 0 5px; color: #34495e; } .movie p { font-size: 14px;
+      line-height: 1.6; color: #555; } .movie .info { font-size: 14px; color:
+      #888; margin-top: 5px; }
     </style>
   </head>
   <body>
@@ -56,7 +21,10 @@
       <h1>A voir de toute urgence pour nos fidèles abonné.e.s</h1>
       <div class="movie">
         <h2>{{movie.title.fr}}</h2>
-        <img src="https://image.tmdb.org/t/p/original/{{movie.poster}}" alt="Affiche de {{movie.title.fr}}" />
+        <img
+          src="https://image.tmdb.org/t/p/original/{{movie.poster}}"
+          alt="Affiche de {{movie.title.fr}}"
+        />
         <p><strong>Synopsis:</strong> {{movie.synopsis.fr}}</p>
         <div class="info">
           <p><strong>Durée:</strong> {{movie.duration}} minutes</p>
@@ -66,6 +34,11 @@
           <p><strong>Réalisateurs:</strong> {{movie.directors}}</p>
           <p><strong>Acteurs:</strong> {{movie.cast}}</p>
         </div>
+      </div>
+      <div class="unsubscribe">
+        <p>Si vous ne souhaitez plus recevoir d'emails de notre part, veuillez
+          <a href="http://localhost:3000/newsletters/unsubscribe?email={{email}}">vous
+            désabonner</a>.</p>
       </div>
     </div>
   </body>

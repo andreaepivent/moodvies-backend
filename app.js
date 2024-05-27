@@ -32,6 +32,9 @@ const corsOptions = {
     methods: ["GET", "POST", "PUT", "DELETE"],
   };
 app.use(cors(corsOptions));
+// Configurer EJS comme moteur de template
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views')); // Définir le dossier des vues
 
 app.use(logger('dev'));
 app.use(express.json());
