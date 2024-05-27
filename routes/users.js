@@ -136,8 +136,88 @@ router.post("/signin", async (req, res) => {
   }
 });
 
+
+// Création d'un middleware pour filtrer les informations du front
+const verifyInfos = (requiredField) => {
+  return (req, res, next) => {
+    // Définition d'une regex qui correspond à une chaine qui ne contient que des espaces vides
+    const regex = /^\s*$/;
+  
+    // Pour chacune des propriétés de req.body passées en argument nous bouclons pour vérifier si elle est undefined, null ou si elle match la regex
+    // auquel cas nous retournons une erreur 400
+    for (const field of requiredField) {
+      if (req.body[field] === undefined || req.body[field] === null || regex.test(req.body[field])) {
+        return res.status(400).json({result: false, error: `${field} is invalid`});
+      }
+    }
+    // Si il n'y a pas d'erreur nous envoyons les informations à la route
+    next();
+  }
+} 
+
+router.post("/getUserData", verifyInfos(['token']), async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const response = await User.findOne({token: token});
+
+    if (!response) {
+      res.status(404).json({result: false, error: "user not found"})
+    }
+
+    const userData = response;
+    res.json({result: true, data: userData})
+
+  } catch (error) {
+    console.error("error :", error.message)
+    res.status(500).json({result: false, error: error.message})
+  }
+})
+
 // Modification du profil pour l'utilisateur
-router.put("/editProfile", async (req, res) => {});
+router.put("/editProfile", verifyInfos(['token', 'username', 'email']), async (req, res) => {
+  const {token, username, email} = req.body;
+
+  try {
+    const response = await User.findOneAndUpdate(
+      { token: token }, 
+      { email: email, username: username }, 
+      { new: true }
+    );
+
+    if (response) {
+      res.json({result: true, data: response});
+    } else {
+      res.status(404).json({result: false, error: "No user found"});
+    }
+
+  } catch (error) {
+    res.status(500).json({result: false, error: error});
+  }
+
+});
+
+router.put("/editPassword", verifyInfos(['currentPassword', 'newPassword']), async (req, res) => {
+  const {currentPassword, newPassword} = req.body;
+
+  try {
+    const response = await User.findOneAndUpdate(
+      { password: currentPassword }, 
+      { password: newPassword }, 
+      { new: true }
+    );
+
+    if (response) {
+      res.json({result: true, data: response});
+    } else {
+      res.status(404).json({result: false, error: "No user found"});
+    }
+
+  } catch (error) {
+    res.status(500).json({result: false, error: error});
+  }
+
+})
 
 // Ajout d'une plateforme pour l'utilisateur
 router.post("/addPlatform", async (req, res) => {});
