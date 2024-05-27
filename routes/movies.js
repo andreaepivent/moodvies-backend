@@ -21,10 +21,12 @@ const getOptions = {
   },
 }; */
 
+// autre adresse pour le fetch : https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=en-US&sort_by=popularity.desc&page=${page}
+
 // fonction fetch pour récupérer l'id des films et toute la discoverie
 const getDiscoverMovies = async (page) => {
   const response = await fetch(
-    `https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=en-US&sort_by=popularity.desc&page=${page}`,
+    `https://api.themoviedb.org/3/movie/popular?page=${page}`,
     getOptions
   );
   if (!response.ok) {
@@ -198,6 +200,7 @@ router.get("/fetchMovies", async (req, res) => {
             fr: movieDetailsFr.title,
           },
           directors,
+          duration: movieDetailsFr.runtime, 
           synopsis: {
             en: movieDetailsEn.overview,
             fr: movieDetailsFr.overview,
@@ -234,13 +237,45 @@ router.get("/fetchMovies", async (req, res) => {
       }
     }
 
-    res.json({result: true});
+    res.json({result: true})
+
   } catch (error) {
     console.error("Fetch error:", error);
     res.json({ result: false, error: error.message });
   }
 });
 
+// Route pour supprimer les doublons
+router.delete('/remove-duplicates', async (req, res) => {
+  try {
+    // Trouver les doublons en se basant sur l'id_tmdb
+    const duplicates = await Movie.aggregate([
+      {
+        $group: {
+          _id: '$id_tmdb',
+          count: { $sum: 1 },
+          docs: { $push: '$_id' }
+        }
+      },
+      {
+        $match: {
+          count: { $gt: 1 }
+        }
+      }
+    ]);
+
+    // Parcourir les doublons et en supprimer tous sauf un
+    for (let duplicate of duplicates) {
+      const idsToDelete = duplicate.docs.slice(1); // Conserver le premier document et supprimer les autres
+      await Movie.deleteMany({ _id: { $in: idsToDelete } });
+    }
+
+    res.status(200).send('Duplicates removed successfully');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error removing duplicates');
+  }
+});
 
 //------------------------------//
 /* router.get("/", (req, res) => {

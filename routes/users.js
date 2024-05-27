@@ -15,7 +15,7 @@ function validateEmail(email) {
 
 // Fonction pour valider le format du mot de passe
 function validatePassword(password) {
-  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // Mot de passe doit avoir au moins 8 caractères, une lettre et un chiffre
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/; // Mot de passe doit avoir au moins 8 caractères, une lettre et un chiffre
   return passwordRegex.test(password);
 }
 
@@ -27,8 +27,6 @@ function validateUsername(username) {
 
 // Route POST pour l'inscription des utilisateurs
 router.post("/signup", async (req, res) => {
-
-  console.log(req.body); // Ajouter cette ligne pour loguer le corps de la requête
 
   // Vérifie si les champs requis sont présents et non vides dans le corps de la requête
   if (!checkBody(req.body, ["username", "email", "password", "birthday"])) {
@@ -49,10 +47,11 @@ router.post("/signup", async (req, res) => {
   }
   // Valide le format du mot de passe
   if (!validatePassword(req.body.password)) {
+    console.error('Password validation failed')
     return res.json({
       result: false,
       error:
-        "Password must be at least 10 characters long and include at least one uppercase letter and one number",
+        "Password must be at least 8 characters long and include at least one uppercase letter and one number",
     });
   }
 
@@ -71,8 +70,6 @@ router.post("/signup", async (req, res) => {
 
     // Hash le mot de passe avec bcrypt en utilisant un sel de 10
     const hash = bcrypt.hashSync(req.body.password, 10);
-
-    console.log(new Date(req.body.birthday));
 
     // Crée un nouvel utilisateur avec les informations fournies
     const newUser = new User({
@@ -125,7 +122,7 @@ router.post("/signin", async (req, res) => {
         .json({ result: false, error: "User not found or wrong password" });
     }
 
-    // Si l'authentification réussit, renvoie le token et les informations de l'utilisateur
+    // Si l'authentification réussit, renvoie le token 
     res.status(200).json({
       result: true,
       token: user.token,

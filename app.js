@@ -11,6 +11,7 @@ var moviesRouter = require('./routes/movies');
 var moodRouter = require('./routes/updateMood');
 var recommendationRouter = require('./routes/recommendation');
 var chatbotRouter = require('./routes/chatbot');
+var newslettersRouter = require('./routes/newsletters');
 
 var app = express();
 const cors = require("cors");
@@ -31,6 +32,9 @@ const corsOptions = {
     methods: ["GET", "POST", "PUT", "DELETE"],
   };
 app.use(cors(corsOptions));
+// Configurer EJS comme moteur de template
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views')); // Définir le dossier des vues
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -44,5 +48,6 @@ app.use('/movies', moviesRouter);
 app.use('/updateMood', moodRouter);
 app.use('/recommendation', recommendationRouter);
 app.use('/chatbot', chatbotRouter);
+app.use('/newsletters', newslettersRouter);
 
 module.exports = app;
