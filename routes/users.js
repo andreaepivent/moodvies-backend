@@ -27,7 +27,6 @@ function validateUsername(username) {
 
 // Route POST pour l'inscription des utilisateurs
 router.post("/signup", async (req, res) => {
-
   console.log(req.body); // Ajouter cette ligne pour loguer le corps de la requête
 
   // Vérifie si les champs requis sont présents et non vides dans le corps de la requête
@@ -79,7 +78,7 @@ router.post("/signup", async (req, res) => {
       username: req.body.username,
       email: req.body.email,
       birthday: new Date(req.body.birthday),
-      genre: req.body.genre,
+      gender: req.body.gender,
       password: hash,
       token: uid2(32), // Génère un token unique
     });
