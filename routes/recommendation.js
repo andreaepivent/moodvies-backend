@@ -6,13 +6,13 @@ const User = require("../models/users");
 const Movie = require("../models/movies");
 
 const countryCodes = {
-  "Américain": "US",
-  "Français": "FR",
-  "Anglais": "GB",
-  "Japonais": "JP",
-  "Coréen": "KR",
-  "Italien": "IT",
-  "Espagnol": "ES"
+  Américain: "US",
+  Français: "FR",
+  Anglais: "GB",
+  Japonais: "JP",
+  Coréen: "KR",
+  Italien: "IT",
+  Espagnol: "ES",
 };
 
 // Recommandation d'un film en fonction du mood de l'utilisateur et de l'option choisie
@@ -36,7 +36,7 @@ router.post("/", async (req, res) => {
           $push: {
             recommendedMovies: {
               movie: recommendation._id,
-              mood: { en: userMood, fr: moodTranslations[userMood] },
+              userMood: { en: userMood, fr: moodTranslations[userMood] },
               date: timestamp,
               rank: index,
             },
@@ -60,18 +60,24 @@ router.post("/customRec", async (req, res) => {
   const timestamp = Date.now();
 
   if (!token || !preferences) {
-    return res
-      .status(400)
-      .send("Please provide token and/or preferences.");
+    return res.status(400).send("Please provide token and/or preferences.");
   }
 
   try {
+    // Récupérer la liste des films déjà recommandés pour cet utilisateur
+    const user = await User.findOne({ token })
+      .select("recommendedMovies.movie")
+      .lean();
+    const recommendedMoviesIds = user
+      ? user.recommendedMovies.map((rm) => rm.movie)
+      : [];
+
     // Construire la requête de recherche dynamiquement
     let query = {};
 
     if (preferences.genre && preferences.genre !== "Indifférent") {
       query["genre.fr"] = { $in: [preferences.genre] };
-    }
+    };
 
     if (preferences.country && preferences.country !== "Indifférent") {
       if (preferences.country === "Autres") {
@@ -83,7 +89,7 @@ router.post("/customRec", async (req, res) => {
           query.country = { $in: [countryCode] };
         }
       }
-    }
+    };
 
     if (preferences.time && preferences.time !== "Indifférent") {
       if (preferences.time === "Court (moins d'1h30)") {
@@ -93,7 +99,7 @@ router.post("/customRec", async (req, res) => {
       } else if (preferences.time === "J'ai du temps (plus de 2h)") {
         query.duration = { $gt: 120 };
       }
-    }
+    };
 
     if (preferences.popularity && preferences.popularity !== "Indifférent") {
       if (preferences.popularity === "Populaire") {
@@ -101,28 +107,37 @@ router.post("/customRec", async (req, res) => {
       } else if (preferences.popularity === "Niche") {
         query.popularity_score = { $lt: 70 }; // Par exemple, un score de popularité inférieur à 70
       }
-    }
+    };
+
+     // Exclure les films déjà recommandés
+     if (recommendedMoviesIds.length > 0) {
+      query._id = { $nin: recommendedMoviesIds };
+    };
 
     // Rechercher des films correspondant aux critères
-    const recommendations = await Movie.find(query);
+    const recommendations = await Movie.aggregate([
+      { $match: query },
+      { $sample: { size: 4 } },
+    ]);
+
     // On met à jour les films recommandés pour l'utilisateur
-    /* const addRecommendedMovies = recommendations.map((recommendation, index) =>
+    const addRecommendedMovies = recommendations.map((recommendation, index) =>
       User.updateOne(
         { token },
         {
           $push: {
             recommendedMovies: {
               movie: recommendation._id,
-              mood: { en: "Custom", fr: "Sur mesure" },
+              userMood: { en: "Custom", fr: "Sur mesure" },
               date: timestamp,
               rank: index,
             },
           },
         }
       )
-    ); 
+    );
 
-    await Promise.all(addRecommendedMovies);*/
+    await Promise.all(addRecommendedMovies);
 
     res.json({ result: true, recommendations });
   } catch (error) {
@@ -140,9 +155,9 @@ router.post("/addFeedback", async (req, res) => {
     await User.updateOne(
       { token, "recommendedMovies.movie": movieId },
       { $set: { "recommendedMovies.$.note": note } }
-    ).then(() => res.json({result:true}));
+    ).then(() => res.json({ result: true }));
   } catch (error) {
-    res.json({result:false, error});
+    res.json({ result: false, error });
   }
 });
 
