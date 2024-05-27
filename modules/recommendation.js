@@ -60,14 +60,14 @@ const recommendMovies = async (token, userMood, option) => {
     recommendations = movies.filter(
       (movie) =>
         movie.moods.en.includes(userMood) &&
-        !recommendedMovieIds.includes(movie._id.toString())
+        !recommendedMovieIds.includes(movie._id.toString() && movie.vote_count >= 100)
     );
   } else if (option === "complementarity") {
     const complementaryMood = getComplementaryMood(userMood);
     recommendations = movies.filter(
       (movie) =>
         movie.moods.en.includes(complementaryMood) &&
-        !recommendedMovieIds.includes(movie._id.toString())
+        !recommendedMovieIds.includes(movie._id.toString() && movie.vote_count >= 100)
     );
   }
 

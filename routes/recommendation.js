@@ -91,6 +91,18 @@ router.post("/customRec", async (req, res) => {
       }
     };
 
+    if (preferences.release_year && preferences.release_year !== "Indifférent") {
+      if (preferences.release_year === "Plutôt vieux (avant les années 60)") {
+        query.release_date = { $lte: new Date('1960-01-01T00:00:00Z')};
+      } else if (preferences.release_year === "Années 60 à 2000") {
+        query.release_date = { $gt: new Date('1960-01-01T00:00:00Z'), $lte: new Date('2000-01-01T00:00:00Z')};
+      } else if (preferences.release_year === "Moderne (2000 à 2020)") {
+        query.release_date = { $gt: new Date('2000-01-01T00:00:00Z'), $lte: new Date('2020-01-01T00:00:00Z')};
+      } else if (preferences.release_year === "2020 à aujourd'hui") {
+        query.release_date = { $gt: new Date('2020-01-01T00:00:00Z')};
+      }
+    };
+
     if (preferences.time && preferences.time !== "Indifférent") {
       if (preferences.time === "Court (moins d'1h30)") {
         query.duration = { $lte: 90 };
@@ -103,15 +115,16 @@ router.post("/customRec", async (req, res) => {
 
     if (preferences.popularity && preferences.popularity !== "Indifférent") {
       if (preferences.popularity === "Populaire") {
-        query.popularity_score = { $gte: 70 }; // Par exemple, un score de popularité supérieur ou égal à 70
+        query.popularity_score = { $gte: 200 }; // Par exemple, un score de popularité supérieur ou égal à 70
       } else if (preferences.popularity === "Niche") {
-        query.popularity_score = { $lt: 70 }; // Par exemple, un score de popularité inférieur à 70
+        query.popularity_score = { $lt: 200 }; // Par exemple, un score de popularité inférieur à 70
       }
     };
 
-     // Exclure les films déjà recommandés
+     // Exclure les films déjà recommandés et qui ont un nombre de votes trop bas
      if (recommendedMoviesIds.length > 0) {
       query._id = { $nin: recommendedMoviesIds };
+      query.vote_count = { gte: 100 }
     };
 
     // Rechercher des films correspondant aux critères
