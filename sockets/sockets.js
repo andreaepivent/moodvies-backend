@@ -10,10 +10,6 @@ const sockets = async (io, socket) => {
   socket.on("deleteMovie", (movieId) => {
     io.emit("movieDeleted", movieId);
   });
-
-  socket.on("addMood", (mood) => {
-    io.emit("moodAdded", mood);
-  });
 };
 
 module.exports = sockets;
