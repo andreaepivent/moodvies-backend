@@ -228,6 +228,14 @@ router.put(
   }
 );
 
+// Récupération des films recommandés pour l'utilisateur
+router.get("/getRecommendations/:token", async (req, res) => {
+  const {token} = req.params;
+  User.findOne({token})
+  .populate('recommendedMovies.movie')
+  .then((data) => res.json(data.recommendedMovies));
+});
+
 // Ajout d'une plateforme pour l'utilisateur
 router.post("/addPlatform", async (req, res) => {});
 
