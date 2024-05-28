@@ -87,8 +87,12 @@ router.post("/signup", async (req, res) => {
     // Sauvegarde le nouvel utilisateur dans la base de données
     const savedUser = await newUser.save();
 
-    // Renvoie une réponse JSON avec le token de l'utilisateur et le username en cas de succès
-    res.json({ result: true, token: savedUser.token, username: savedUser.username  });
+    // Renvoie une réponse JSON avec le token de l'utilisateur en cas de succès
+    res.json({
+      result: true,
+      token: savedUser.token,
+      username: savedUser.username,
+    });
   } catch (error) {
     console.error("Signup error:", error);
     // Renvoie une réponse JSON avec une erreur en cas d'échec de la sauvegarde ou de la recherche
@@ -133,7 +137,7 @@ router.post("/signin", async (req, res) => {
     res.status(200).json({
       result: true,
       token: user.token,
-      username : user.username,
+      username: user.username,
     });
   } catch (error) {
     console.error("Signin error:", error);
@@ -231,6 +235,14 @@ router.put(
     }
   }
 );
+
+// Récupération des films recommandés pour l'utilisateur
+router.get("/getRecommendations/:token", async (req, res) => {
+  const {token} = req.params;
+  User.findOne({token})
+  .populate('recommendedMovies.movie')
+  .then((data) => res.json(data.recommendedMovies));
+});
 
 // Ajout d'une plateforme pour l'utilisateur
 router.post("/addPlatform", async (req, res) => {});
