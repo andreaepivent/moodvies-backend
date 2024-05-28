@@ -25,9 +25,12 @@ function validateUsername(username) {
   return usernameRegex.test(username);
 }
 
+// ===============================================================
+// ================ route Post SignUp =================
+// =============================================================
+
 // Route POST pour l'inscription des utilisateurs
 router.post("/signup", async (req, res) => {
-
   // Vérifie si les champs requis sont présents et non vides dans le corps de la requête
   if (!checkBody(req.body, ["username", "email", "password", "birthday"])) {
     return res.json({ result: false, error: "Missing or empty fields" }); // Renvoie une réponse JSON avec une erreur si des champs sont manquants ou vides
@@ -47,7 +50,7 @@ router.post("/signup", async (req, res) => {
   }
   // Valide le format du mot de passe
   if (!validatePassword(req.body.password)) {
-    console.error('Password validation failed')
+    console.error("Password validation failed");
     return res.json({
       result: false,
       error:
@@ -84,14 +87,18 @@ router.post("/signup", async (req, res) => {
     // Sauvegarde le nouvel utilisateur dans la base de données
     const savedUser = await newUser.save();
 
-    // Renvoie une réponse JSON avec le token de l'utilisateur en cas de succès
-    res.json({ result: true, token: savedUser.token });
+    // Renvoie une réponse JSON avec le token de l'utilisateur et le username en cas de succès
+    res.json({ result: true, token: savedUser.token, username: savedUser.username  });
   } catch (error) {
     console.error("Signup error:", error);
     // Renvoie une réponse JSON avec une erreur en cas d'échec de la sauvegarde ou de la recherche
     res.json({ result: false, error: "An error occurred during signup" });
   }
 });
+
+// ===============================================================
+// ================ route Post SignIn =================
+// =============================================================
 
 // Route POST pour la connexion des utilisateurs
 router.post("/signin", async (req, res) => {
@@ -122,10 +129,11 @@ router.post("/signin", async (req, res) => {
         .json({ result: false, error: "User not found or wrong password" });
     }
 
-    // Si l'authentification réussit, renvoie le token 
+    // Si l'authentification réussit, renvoie le token
     res.status(200).json({
       result: true,
       token: user.token,
+      username : user.username,
     });
   } catch (error) {
     console.error("Signin error:", error);
@@ -133,88 +141,96 @@ router.post("/signin", async (req, res) => {
   }
 });
 
-
 // Création d'un middleware pour filtrer les informations du front
 const verifyInfos = (requiredField) => {
   return (req, res, next) => {
     // Définition d'une regex qui correspond à une chaine qui ne contient que des espaces vides
     const regex = /^\s*$/;
-  
+
     // Pour chacune des propriétés de req.body passées en argument nous bouclons pour vérifier si elle est undefined, null ou si elle match la regex
     // auquel cas nous retournons une erreur 400
     for (const field of requiredField) {
-      if (req.body[field] === undefined || req.body[field] === null || regex.test(req.body[field])) {
-        return res.status(400).json({result: false, error: `${field} is invalid`});
+      if (
+        req.body[field] === undefined ||
+        req.body[field] === null ||
+        regex.test(req.body[field])
+      ) {
+        return res
+          .status(400)
+          .json({ result: false, error: `${field} is invalid` });
       }
     }
     // Si il n'y a pas d'erreur nous envoyons les informations à la route
     next();
-  }
-} 
+  };
+};
 
-router.post("/getUserData", verifyInfos(['token']), async (req, res) => {
+router.post("/getUserData", verifyInfos(["token"]), async (req, res) => {
   const { token } = req.body;
 
   try {
-    const response = await User.findOne({token: token});
+    const response = await User.findOne({ token: token });
 
     if (!response) {
-      res.status(404).json({result: false, error: "user not found"})
+      res.status(404).json({ result: false, error: "user not found" });
     }
 
     const userData = response;
-    res.json({result: true, data: userData})
-
+    res.json({ result: true, data: userData });
   } catch (error) {
-    console.error("error :", error.message)
-    res.status(500).json({result: false, error: error.message})
+    console.error("error :", error.message);
+    res.status(500).json({ result: false, error: error.message });
   }
-})
-
-// Modification du profil pour l'utilisateur
-router.put("/editProfile", verifyInfos(['token', 'username', 'email']), async (req, res) => {
-  const {token, username, email} = req.body;
-
-  try {
-    const response = await User.findOneAndUpdate(
-      { token: token }, 
-      { email: email, username: username }, 
-      { new: true }
-    );
-
-    if (response) {
-      res.json({result: true, data: response});
-    } else {
-      res.status(404).json({result: false, error: "No user found"});
-    }
-
-  } catch (error) {
-    res.status(500).json({result: false, error: error});
-  }
-
 });
 
-router.put("/editPassword", verifyInfos(['currentPassword', 'newPassword']), async (req, res) => {
-  const {currentPassword, newPassword} = req.body;
+// Modification du profil pour l'utilisateur
+router.put(
+  "/editProfile",
+  verifyInfos(["token", "username", "email"]),
+  async (req, res) => {
+    const { token, username, email } = req.body;
 
-  try {
-    const response = await User.findOneAndUpdate(
-      { password: currentPassword }, 
-      { password: newPassword }, 
-      { new: true }
-    );
+    try {
+      const response = await User.findOneAndUpdate(
+        { token: token },
+        { email: email, username: username },
+        { new: true }
+      );
 
-    if (response) {
-      res.json({result: true, data: response});
-    } else {
-      res.status(404).json({result: false, error: "No user found"});
+      if (response) {
+        res.json({ result: true, data: response });
+      } else {
+        res.status(404).json({ result: false, error: "No user found" });
+      }
+    } catch (error) {
+      res.status(500).json({ result: false, error: error });
     }
-
-  } catch (error) {
-    res.status(500).json({result: false, error: error});
   }
+);
 
-})
+router.put(
+  "/editPassword",
+  verifyInfos(["currentPassword", "newPassword"]),
+  async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+
+    try {
+      const response = await User.findOneAndUpdate(
+        { password: currentPassword },
+        { password: newPassword },
+        { new: true }
+      );
+
+      if (response) {
+        res.json({ result: true, data: response });
+      } else {
+        res.status(404).json({ result: false, error: "No user found" });
+      }
+    } catch (error) {
+      res.status(500).json({ result: false, error: error });
+    }
+  }
+);
 
 // Ajout d'une plateforme pour l'utilisateur
 router.post("/addPlatform", async (req, res) => {});
