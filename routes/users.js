@@ -244,6 +244,26 @@ router.get("/getRecommendations/:token", async (req, res) => {
   .then((data) => res.json(data.recommendedMovies));
 });
 
+// Laiser un avis sur un film recommandé
+router.post("/addFeedback", async (req, res) => {
+  let { token, note, movieId } = req.body;
+  note = Number(note);
+
+  // Vérifiez si la note est 0 et assignez null
+  if (note === 0) {
+    note = null;
+  }
+
+  try {
+    await User.updateOne(
+      { token, "recommendedMovies.movie": movieId },
+      { $set: { "recommendedMovies.$.note": note } }
+    ).then(() => res.json({ result: true }));
+  } catch (error) {
+    res.json({ result: false, error });
+  }
+});
+
 // Ajout d'une plateforme pour l'utilisateur
 router.post("/addPlatform", async (req, res) => {});
 
