@@ -23,6 +23,12 @@ const getOptions = {
 
 // autre adresse pour le fetch : https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=en-US&sort_by=popularity.desc&page=${page}
 
+
+
+// ===============================================================
+// ================ Fonctions Fetch =================
+// =============================================================
+
 // fonction fetch pour récupérer l'id des films et toute la discoverie
 const getDiscoverMovies = async (page) => {
   const response = await fetch(
@@ -83,7 +89,7 @@ const fetchMovieKeywords = async (movieId) => {
   return response.json();
 };
 
-// fonction fetch pour récupérer les films similaires 
+// fonction fetch pour récupérer les films similaires
 const fetchMovieSimilar = async (movieId) => {
   const response = await fetch(
     `https://api.themoviedb.org/3/movie/${movieId}/similar?language=en-US&page=1`,
@@ -95,7 +101,7 @@ const fetchMovieSimilar = async (movieId) => {
   return response.json();
 };
 
-// fonction fetch pour récupérer les plateformes sur lesquelles les films sont disponible 
+// fonction fetch pour récupérer les plateformes sur lesquelles les films sont disponible
 const fetchMovieProviders = async (movieId) => {
   const response = await fetch(
     `https://api.themoviedb.org/3/movie/${movieId}/watch/providers`,
@@ -119,6 +125,10 @@ const fetchMovieBackdrop = async (movieId) => {
   return response.json();
 };
 
+// ==============================================================
+// ================ route GET pour feed la BDD  =================
+// =============================================================
+
 // routes GET servant à nourrir la BDD des films
 router.get("/fetchMovies", async (req, res) => {
   try {
@@ -129,7 +139,7 @@ router.get("/fetchMovies", async (req, res) => {
         const movieData1 = await getDiscoverMovies(page);
         const movieId = movieData1.results[i].id;
 
-        // Requêtes pour récupérer les données en en / general 
+        // Requêtes pour récupérer les données en en / general
         const [
           movieCreditsEn,
           movieDetailsEn,
@@ -200,7 +210,7 @@ router.get("/fetchMovies", async (req, res) => {
             fr: movieDetailsFr.title,
           },
           directors,
-          duration: movieDetailsFr.runtime, 
+          duration: movieDetailsFr.runtime,
           synopsis: {
             en: movieDetailsEn.overview,
             fr: movieDetailsFr.overview,
@@ -237,31 +247,34 @@ router.get("/fetchMovies", async (req, res) => {
       }
     }
 
-    res.json({result: true})
-
+    res.json({ result: true });
   } catch (error) {
     console.error("Fetch error:", error);
     res.json({ result: false, error: error.message });
   }
 });
 
+// ====================================================================================
+// ================ route DELETE pour supprimer les doublons dans la BDD =================
+// ====================================================================================
+
 // Route pour supprimer les doublons
-router.delete('/remove-duplicates', async (req, res) => {
+router.delete("/remove-duplicates", async (req, res) => {
   try {
     // Trouver les doublons en se basant sur l'id_tmdb
     const duplicates = await Movie.aggregate([
       {
         $group: {
-          _id: '$id_tmdb',
+          _id: "$id_tmdb",
           count: { $sum: 1 },
-          docs: { $push: '$_id' }
-        }
+          docs: { $push: "$_id" },
+        },
       },
       {
         $match: {
-          count: { $gt: 1 }
-        }
-      }
+          count: { $gt: 1 },
+        },
+      },
     ]);
 
     // Parcourir les doublons et en supprimer tous sauf un
@@ -270,21 +283,11 @@ router.delete('/remove-duplicates', async (req, res) => {
       await Movie.deleteMany({ _id: { $in: idsToDelete } });
     }
 
-    res.status(200).send('Duplicates removed successfully');
+    res.status(200).send("Duplicates removed successfully");
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error removing duplicates');
+    res.status(500).send("Error removing duplicates");
   }
 });
 
-//------------------------------//
-/* router.get("/", (req, res) => {
-  fetch(urlData1, getOptions)
-    .then((response) => response.json())
-    .then((data) => {
-      res.json({ result: true, movies: data.results });
-    })
-    .catch((err) => console.error("error:" + err));
-});
-*/
 module.exports = router;

@@ -25,6 +25,10 @@ function validateUsername(username) {
   return usernameRegex.test(username);
 }
 
+// ===============================================================
+// ================ route Post SignUp =================
+// =============================================================
+
 // Route POST pour l'inscription des utilisateurs
 router.post("/signup", async (req, res) => {
   // Vérifie si les champs requis sont présents et non vides dans le corps de la requête
@@ -95,6 +99,10 @@ router.post("/signup", async (req, res) => {
     res.json({ result: false, error: "An error occurred during signup" });
   }
 });
+
+// ===============================================================
+// ================ route Post SignIn =================
+// =============================================================
 
 // Route POST pour la connexion des utilisateurs
 router.post("/signin", async (req, res) => {
@@ -303,6 +311,32 @@ router.post('/google-login', async (req, res) => {
     console.error('Error in /google-login route:', error);
     // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
     res.status(500).json({ result: false, message: 'Internal server error' });
+    
+// Récupération des films recommandés pour l'utilisateur
+router.get("/getRecommendations/:token", async (req, res) => {
+  const {token} = req.params;
+  User.findOne({token})
+  .populate('recommendedMovies.movie')
+  .then((data) => res.json(data.recommendedMovies));
+});
+
+// Laiser un avis sur un film recommandé
+router.post("/addFeedback", async (req, res) => {
+  let { token, note, movieId } = req.body;
+  note = Number(note);
+
+  // Vérifiez si la note est 0 et assignez null
+  if (note === 0) {
+    note = null;
+  }
+
+  try {
+    await User.updateOne(
+      { token, "recommendedMovies.movie": movieId },
+      { $set: { "recommendedMovies.$.note": note } }
+    ).then(() => res.json({ result: true }));
+  } catch (error) {
+    res.json({ result: false, error });
   }
 });
 
