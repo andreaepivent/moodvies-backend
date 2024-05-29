@@ -169,25 +169,30 @@ const verifyInfos = (requiredField) => {
   };
 };
 
+// Route pour obtenir les données utilisateur
 router.post("/getUserData", verifyInfos(["token"]), async (req, res) => {
   const { token } = req.body;
 
   try {
+    // Recherche l'utilisateur par le token fourni
     const response = await User.findOne({ token: token });
 
     if (!response) {
+      // Si l'utilisateur n'est pas trouvé, renvoie une erreur 404
       res.status(404).json({ result: false, error: "user not found" });
     }
 
     const userData = response;
+    // Renvoie les données de l'utilisateur trouvées
     res.json({ result: true, data: userData });
   } catch (error) {
     console.error("error :", error.message);
+    // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
     res.status(500).json({ result: false, error: error.message });
   }
 });
 
-// Modification du profil pour l'utilisateur
+// Route pour modifier le profil de l'utilisateur
 router.put(
   "/editProfile",
   verifyInfos(["token", "username", "email"]),
@@ -195,6 +200,7 @@ router.put(
     const { token, username, email } = req.body;
 
     try {
+      // Met à jour les informations de l'utilisateur par le token fourni
       const response = await User.findOneAndUpdate(
         { token: token },
         { email: email, username: username },
@@ -202,16 +208,20 @@ router.put(
       );
 
       if (response) {
+        // Si l'utilisateur est trouvé et mis à jour, renvoie les nouvelles données
         res.json({ result: true, data: response });
       } else {
+        // Si l'utilisateur n'est pas trouvé, renvoie une erreur 404
         res.status(404).json({ result: false, error: "No user found" });
       }
     } catch (error) {
+      // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
       res.status(500).json({ result: false, error: error });
     }
   }
 );
 
+// Route pour modifier le mot de passe de l'utilisateur
 router.put(
   "/editPassword",
   verifyInfos(["currentPassword", "newPassword"]),
@@ -219,6 +229,7 @@ router.put(
     const { currentPassword, newPassword } = req.body;
 
     try {
+      // Met à jour le mot de passe de l'utilisateur par le mot de passe actuel fourni
       const response = await User.findOneAndUpdate(
         { password: currentPassword },
         { password: newPassword },
@@ -226,16 +237,81 @@ router.put(
       );
 
       if (response) {
+        // Si l'utilisateur est trouvé et mis à jour, renvoie les nouvelles données
         res.json({ result: true, data: response });
       } else {
+        // Si l'utilisateur n'est pas trouvé, renvoie une erreur 404
         res.status(404).json({ result: false, error: "No user found" });
       }
     } catch (error) {
+      // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
       res.status(500).json({ result: false, error: error });
     }
   }
 );
 
+// Fonction pour trouver un utilisateur par email
+const findUserByEmail = async (email) => User.findOne({ email });
+
+// Route pour la connexion avec Google
+router.post('/google-login', async (req, res) => {
+  const { access_token } = req.body;
+
+  try {
+    // Récupère les informations utilisateur de Google avec le token d'accès fourni
+    const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    // Log le texte brut de la réponse de Google
+    const responseText = await response.text();
+    console.log('Google response text:', responseText);
+
+    // Parse la réponse en JSON
+    const googleUser = JSON.parse(responseText);
+
+    if (!googleUser.email) {
+      console.error('Failed to get email from Google user info');
+      // Si l'email n'est pas récupéré, renvoie une erreur 400
+      return res.status(400).json({ result: false, message: 'Failed to get user info from Google' });
+    }
+
+    // Cherche l'utilisateur par email dans la base de données
+    let user = await findUserByEmail(googleUser.email);
+
+    if (!user) {
+      // Crée un nouvel utilisateur si aucun n'est trouvé
+      user = new User({
+        email: googleUser.email,
+        username: googleUser.name,
+        token: uid2(32),
+      });
+
+      // Sauvegarde le nouvel utilisateur dans la base de données
+      const savedUser = await user.save();
+
+      // Renvoie les données de l'utilisateur nouvellement créé
+      return res.json({
+        result: true,
+        token: savedUser.token,
+        username: savedUser.username,
+      });
+    } else {
+      // Renvoie les données de l'utilisateur existant
+      res.json({
+        result: true,
+        token: user.token,
+        username: user.username,
+      });
+    }
+
+  } catch (error) {
+    console.error('Error in /google-login route:', error);
+    // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
+    res.status(500).json({ result: false, message: 'Internal server error' });
+    
 // Récupération des films recommandés pour l'utilisateur
 router.get("/getRecommendations/:token", async (req, res) => {
   const {token} = req.params;
