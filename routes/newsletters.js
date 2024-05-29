@@ -40,6 +40,15 @@ router.post("/send-email", async (req, res) => {
       return res.status(400).json({ message: "Adresse email invalide" });
     }
 
+    //Vérification si l'adresse email est déjà enregistrée pour la newsletter
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser && existingUser.newsletter) {
+      return res
+        .status(409) // Code 409 pour conflit
+        .json({ message: "Email already registered to the newsletter" });
+    }
+
     // Récupérer le film par id_tmdb depuis la base de données
     const movie = await Movie.findOne({ id_tmdb: 823464 }).lean();
 
@@ -49,15 +58,6 @@ router.post("/send-email", async (req, res) => {
 
     // Formater la date de sortie
     movie.releaseDateFormatted = formatDate(movie.releaseDate);
-
-    //Vérification si l'adresse email est déjà enregistrée pour la newsletter
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser && existingUser.newsletter) {
-      return res
-        .status(400)
-        .json({ message: "Email déjà enregistré à la newsletter" });
-    }
 
     console.log("Film trouvé:", movie.title.en); // Vérifier que les données du film sont correctes
     // console.log("Template compilé:", template({ movie, email })); // Vérifier le HTML généré
@@ -73,31 +73,27 @@ router.post("/send-email", async (req, res) => {
     // Envoyer l'email
     await transporter.sendMail(mailOptions);
 
-    // Mettre à jour l'état `newsletter` de l'utilisateur
+    // Mettre à jour l'état `newsletter` à true si l'utilisateur esttrouvée
     const result = await User.updateOne(
       { email },
       { newsletter: true },
-      { upsert: true }
+      { upsert: true } // Si aucun utilisateur avec l'email donné n'existe, un nouveau document utilisateur sera créé 
     );
 
     // Vérifier si l'email a été trouvé et mis à jour
     if (result.nModified === 0 && !result.upserted) {
       return res
         .status(404)
-        .send("Adresse email non trouvée et n’a pas pu être créée");
+        .send("Email address not found and could not be created");
     }
 
     res.status(200).json({
-      message: "Courriel envoyé avec succès et inscription à la newsletter",
+      message: "Successful e-mail and newsletter subscription",
     });
   } catch (error) {
-    console.error(
-      "Erreur lors de l'envoi d'un courriel ou de la mise à jour de la newsletter:",
-      error
-    );
+    console.error("Error sending email or updating newsletter", error);
     res.status(500).json({
-      message:
-        "Échec de l'envoi du courrier électronique ou de la mise à jour de l'abonnement",
+      message: "Failed to send e-mail or update subscription",
     });
   }
 });
