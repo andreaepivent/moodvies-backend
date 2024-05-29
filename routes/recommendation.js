@@ -124,9 +124,9 @@ router.post("/customRec", async (req, res) => {
 
     if (preferences.provider && preferences.provider !== "Indifférent") {
       if (preferences.popularity === "Populaire") {
-        query.popularity_score = { $gte: 200 }; // Par exemple, un score de popularité supérieur ou égal à 70
+        query.popularity_score = { $gte: 200 }; // Par exemple, un score de popularité supérieur ou égal à 200
       } else if (preferences.popularity === "Niche") {
-        query.popularity_score = { $lt: 200 }; // Par exemple, un score de popularité inférieur à 70
+        query.popularity_score = { $lt: 200 }; // Par exemple, un score de popularité inférieur à 200
       }
     }
 
@@ -139,6 +139,7 @@ router.post("/customRec", async (req, res) => {
     // Rechercher des films correspondant aux critères
     const recommendations = await Movie.aggregate([
       { $match: query },
+      { $sort: { popularity_score: -1 } },
       { $sample: { size: 4 } },
     ]);
 
