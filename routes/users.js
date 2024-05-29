@@ -276,6 +276,71 @@ router.post("/addFeedback", async (req, res) => {
   } catch (error) {
     res.json({ result: false, error });
   }
+})
+
+
+// Fonction pour trouver un utilisateur par email
+const findUserByEmail = async (email) => User.findOne({ email });
+
+// Route pour la connexion avec Google
+router.post('/google-login', async (req, res) => {
+  const { access_token } = req.body;
+
+  try {
+    // Récupère les informations utilisateur de Google avec le token d'accès fourni
+    const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    // Log le texte brut de la réponse de Google
+    const responseText = await response.text();
+    console.log('Google response text:', responseText);
+
+    // Parse la réponse en JSON
+    const googleUser = JSON.parse(responseText);
+
+    if (!googleUser.email) {
+      console.error('Failed to get email from Google user info');
+      // Si l'email n'est pas récupéré, renvoie une erreur 400
+      return res.status(400).json({ result: false, message: 'Failed to get user info from Google' });
+    }
+
+    // Cherche l'utilisateur par email dans la base de données
+    let user = await findUserByEmail(googleUser.email);
+
+    if (!user) {
+      // Crée un nouvel utilisateur si aucun n'est trouvé
+      user = new User({
+        email: googleUser.email,
+        username: googleUser.name,
+        token: uid2(32),
+      });
+
+      // Sauvegarde le nouvel utilisateur dans la base de données
+      const savedUser = await user.save();
+
+      // Renvoie les données de l'utilisateur nouvellement créé
+      return res.json({
+        result: true,
+        token: savedUser.token,
+        username: savedUser.username,
+      });
+    } else {
+      // Renvoie les données de l'utilisateur existant
+      res.json({
+        result: true,
+        token: user.token,
+        username: user.username,
+      });
+    }
+
+  } catch (error) {
+    console.error('Error in /google-login route:', error);
+    // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
+    res.status(500).json({ result: false, message: 'Internal server error' });
+  }
 });
 
 // Ajout d'une plateforme pour l'utilisateur
