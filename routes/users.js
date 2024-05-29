@@ -255,7 +255,7 @@ const findUserByEmail = async (email) => User.findOne({ email });
 
 // Route pour la connexion avec Google
 router.post("/google-login", async (req, res) => {
-  const { access_token } = req.body;
+  const { access_token } = req.body; 
 
   try {
     // Récupère les informations utilisateur de Google avec le token d'accès fourni
