@@ -350,9 +350,31 @@ router.post("/addFeedback", async (req, res) => {
 });
 
 // Ajout d'une plateforme pour l'utilisateur
-router.post("/addPlatform", async (req, res) => {});
+router.post("/addPlatform", async (req, res) => {
+  const { token, platform } = req.body;
+
+  try {
+    await User.updateOne(
+      { token },
+      { $push: { "platforms": platform } }
+    ).then(() => res.json({ result: true }));
+  } catch (error) {
+    res.json({ result: false, error });
+  }
+});
 
 // Suppression d'une plateforme pour l'utilisateur
-router.delete("/deletePlatform", async (req, res) => {});
+router.delete("/deletePlatform", async (req, res) => {
+  const { token, platform } = req.body;
+
+  try {
+    await User.updateOne(
+      { token },
+      { $pull: { "platforms": platform } }
+    ).then(() => res.json({ result: true }));
+  } catch (error) {
+    res.json({ result: false, error });
+  }
+});
 
 module.exports = router;

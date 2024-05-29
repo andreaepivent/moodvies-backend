@@ -122,7 +122,7 @@ router.post("/customRec", async (req, res) => {
       }
     }
 
-    if (preferences.popularity && preferences.popularity !== "Indifférent") {
+    if (preferences.provider && preferences.provider !== "Indifférent") {
       if (preferences.popularity === "Populaire") {
         query.popularity_score = { $gte: 200 }; // Par exemple, un score de popularité supérieur ou égal à 70
       } else if (preferences.popularity === "Niche") {
@@ -150,7 +150,7 @@ router.post("/customRec", async (req, res) => {
           $push: {
             recommendedMovies: {
               movie: recommendation._id,
-              userMood: { en: "Custom", fr: "Sur mesure" },
+              userMood: { en: "Picky", fr: "Sélectif" },
               date: timestamp,
               rank: index,
             },
