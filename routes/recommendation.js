@@ -168,19 +168,5 @@ router.post("/customRec", async (req, res) => {
   }
 });
 
-// Laiser un avis sur un film recommandé
-router.post("/addFeedback", async (req, res) => {
-  let { token, note, movieId } = req.body;
-  note = Number(note);
-
-  try {
-    await User.updateOne(
-      { token, "recommendedMovies.movie": movieId },
-      { $set: { "recommendedMovies.$.note": note } }
-    ).then(() => res.json({ result: true }));
-  } catch (error) {
-    res.json({ result: false, error });
-  }
-});
 
 module.exports = router;
