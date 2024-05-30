@@ -150,6 +150,8 @@ const verifyInfos = (requiredField) => {
   return (req, res, next) => {
     // Définition d'une regex qui correspond à une chaine qui ne contient que des espaces vides
     const regex = /^\s*$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 
     // Pour chacune des propriétés de req.body passées en argument nous bouclons pour vérifier si elle est undefined, null ou si elle match la regex
     // auquel cas nous retournons une erreur 400
@@ -161,7 +163,13 @@ const verifyInfos = (requiredField) => {
       ) {
         return res
           .status(400)
-          .json({ result: false, error: `${field} is invalid` });
+          .json({ result: false, error: `Please enter valid informations` });
+      } 
+      // Si le champ testé correspond au champ email alors nous vérifions que la data reçu est bien au bon format
+       if (field === "email" && !emailRegex.test(req.body[field])) {
+        return res
+          .status(400)
+          .json({ result: false, error: 'Please enter a valid email address' });
       }
     }
     // Si il n'y a pas d'erreur nous envoyons les informations à la route
