@@ -40,7 +40,7 @@ router.post("/signup", async (req, res) => {
   if (!validateUsername(req.body.username)) {
     return res.json({
       result: false,
-      error: "Le format du nom d'utilisateur n'est pas valide. Seuls les lettres et les chiffres sont autorisés.",
+      error: "Le format du pseudo n'est pas valide. Seuls les lettres et les chiffres sont autorisés.",
     });
   }
 
@@ -157,7 +157,7 @@ const verifyInfos = (requiredField) => {
   return (req, res, next) => {
     // Définition d'une regex qui correspond à une chaine qui ne contient que des espaces vides
     const regex = /^\s*$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // 
 
 
     // Pour chacune des propriétés de req.body passées en argument nous bouclons pour vérifier si elle est undefined, null ou si elle match la regex

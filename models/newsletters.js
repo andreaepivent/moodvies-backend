@@ -2,13 +2,8 @@ const mongoose = require('mongoose');
 
 const newsletterSchema = mongoose.Schema({
     date : Date,
-    content: {
-        en:String,
-        fr:String
-    },
-    images:[String],
-    receivedBy : [{type: mongoose.Schema.Types.ObjectId, ref:"users"}], 
-})
+    movie : {type: mongoose.Schema.Types.ObjectId, ref:"movies"}
+   })
 
 const Newsletter = mongoose.model('newsletters', newsletterSchema);
 
