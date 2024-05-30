@@ -145,15 +145,13 @@ router.post("/signin", async (req, res) => {
   }
 });
 
-// Création d'un middleware pour filtrer les informations du front
 const verifyInfos = (requiredField) => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     // Définition d'une regex qui correspond à une chaine qui ne contient que des espaces vides
     const regex = /^\s*$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-
-    // Pour chacune des propriétés de req.body passées en argument nous bouclons pour vérifier si elle est undefined, null ou si elle match la regex
+    // Pour chacune des propriétés de req.body passées en argument, nous bouclons pour vérifier si elle est undefined, null ou si elle match la regex
     // auquel cas nous retournons une erreur 400
     for (const field of requiredField) {
       if (
@@ -163,19 +161,42 @@ const verifyInfos = (requiredField) => {
       ) {
         return res
           .status(400)
-          .json({ result: false, error: `Entrez des informations valides` });
+          .json({ result: false, error: `Entrez des informations valides pour ${field}` });
       } 
-      // Si le champ testé correspond au champ email alors nous vérifions que la data reçu est bien au bon format
-       if (field === "email" && !emailRegex.test(req.body[field])) {
+      // Si le champ testé correspond au champ email alors nous vérifions que la data reçue est bien au bon format
+      if (field === "email" && !emailRegex.test(req.body[field])) {
         return res
           .status(400)
           .json({ result: false, error: 'Entrez une adresse email valide' });
-      }
+      }   
     }
+    
+    // Vérifie si l'utilisateur existe déjà
+    try {
+      const existingUser = await User.findOne({
+        $or: [
+          { email: req.body["email"] },
+          { username: req.body["username"] }
+        ]
+      });
+
+      if (existingUser) {
+        return res
+          .status(400)
+          .json({ result: false, error: 'Email ou nom d\'utilisateur déjà utilisé' });
+      }
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ result: false, error: 'Erreur serveur' });
+    }
+
     // Si il n'y a pas d'erreur nous envoyons les informations à la route
     next();
   };
 };
+
+export default verifyInfos;
 
 // Route pour obtenir les données utilisateur
 router.post("/getUserData", verifyInfos(["token"]), async (req, res) => {
@@ -337,7 +358,7 @@ router.post("/google-login", async (req, res) => {
       });
     } else {
       // Renvoie les données de l'utilisateur existant
-      res.json({
+      return res.json({
         result: true,
         token: user.token,
         username: user.username,
