@@ -157,6 +157,8 @@ const verifyInfos = (requiredField) => {
   return (req, res, next) => {
     // Définition d'une regex qui correspond à une chaine qui ne contient que des espaces vides
     const regex = /^\s*$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 
     // Pour chacune des propriétés de req.body passées en argument nous bouclons pour vérifier si elle est undefined, null ou si elle match la regex
     // auquel cas nous retournons une erreur 400
@@ -168,7 +170,13 @@ const verifyInfos = (requiredField) => {
       ) {
         return res
           .status(400)
-          .json({ result: false, error: `${field} is invalid` });
+          .json({ result: false, error: `Entrez des informations valides` });
+      } 
+      // Si le champ testé correspond au champ email alors nous vérifions que la data reçu est bien au bon format
+       if (field === "email" && !emailRegex.test(req.body[field])) {
+        return res
+          .status(400)
+          .json({ result: false, error: 'Entrez une adresse email valide' });
       }
     }
     // Si il n'y a pas d'erreur nous envoyons les informations à la route
@@ -186,7 +194,7 @@ router.post("/getUserData", verifyInfos(["token"]), async (req, res) => {
 
     if (!response) {
       // Si l'utilisateur n'est pas trouvé, renvoie une erreur 404
-      res.status(404).json({ result: false, error: "user not found" });
+      res.status(404).json({ result: false, error: "Aucun utilisateur trouvé" });
     }
 
     const userData = response;
@@ -219,7 +227,7 @@ router.put(
         res.json({ result: true, data: response });
       } else {
         // Si l'utilisateur n'est pas trouvé, renvoie une erreur 404
-        res.status(404).json({ result: false, error: "No user found" });
+        res.status(404).json({ result: false, error: "Aucun utilisateur trouvé" });
       }
     } catch (error) {
       // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
@@ -248,7 +256,7 @@ router.put(
         res.json({ result: true, data: response });
       } else {
         // Si l'utilisateur n'est pas trouvé, renvoie une erreur 404
-        res.status(404).json({ result: false, error: "No user found" });
+        res.status(404).json({ result: false, error: "Aucun utilisateur trouvé" });
       }
     } catch (error) {
       // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
@@ -257,40 +265,61 @@ router.put(
   }
 );
 
+// Récupération des films recommandés pour l'utilisateur
+router.get("/getRecommendations/:token", async (req, res) => {
+  const {token} = req.params;
+  User.findOne({token})
+  .populate('recommendedMovies.movie')
+  .then((data) => res.json(data.recommendedMovies));
+});
+
+// Laiser un avis sur un film recommandé
+router.post("/addFeedback", async (req, res) => {
+  let { token, note, movieId } = req.body;
+  note = Number(note);
+
+  // Vérifiez si la note est 0 et assignez null
+  if (note === 0) {
+    note = null;
+  }
+
+  try {
+    await User.updateOne(
+      { token, "recommendedMovies.movie": movieId },
+      { $set: { "recommendedMovies.$.note": note } }
+    ).then(() => res.json({ result: true }));
+  } catch (error) {
+    res.json({ result: false, error });
+  }
+})
+
+
 // Fonction pour trouver un utilisateur par email
 const findUserByEmail = async (email) => User.findOne({ email });
 
 // Route pour la connexion avec Google
 router.post("/google-login", async (req, res) => {
-  const { access_token } = req.body;
+  const { access_token } = req.body; 
 
   try {
     // Récupère les informations utilisateur de Google avec le token d'accès fourni
-    const response = await fetch(
-      "https://www.googleapis.com/oauth2/v3/userinfo",
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      }
-    );
+    const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
 
     // Log le texte brut de la réponse de Google
     const responseText = await response.text();
-    console.log("Google response text:", responseText);
+    console.log('Google response text:', responseText);
 
     // Parse la réponse en JSON
     const googleUser = JSON.parse(responseText);
 
     if (!googleUser.email) {
-      console.error("Failed to get email from Google user info");
+      console.error('Failed to get email from Google user info');
       // Si l'email n'est pas récupéré, renvoie une erreur 400
-      return res
-        .status(400)
-        .json({
-          result: false,
-          message: "Failed to get user info from Google",
-        });
+      return res.status(400).json({ result: false, message: 'Failed to get user info from Google' });
     }
 
     // Cherche l'utilisateur par email dans la base de données
@@ -321,45 +350,40 @@ router.post("/google-login", async (req, res) => {
         username: user.username,
       });
     }
+
   } catch (error) {
-    console.error("Error in /google-login route:", error);
+    console.error('Error in /google-login route:', error);
     // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
-    res.status(500).json({ result: false, message: "Internal server error" });
+    res.status(500).json({ result: false, message: 'Internal server error' });
   }
 });
 
-// Récupération des films recommandés pour l'utilisateur
-router.get("/getRecommendations/:token", async (req, res) => {
-  const { token } = req.params;
-  User.findOne({ token })
-    .populate("recommendedMovies.movie")
-    .then((data) => res.json(data.recommendedMovies));
-});
-
-// Laiser un avis sur un film recommandé
-router.post("/addFeedback", async (req, res) => {
-  let { token, note, movieId } = req.body;
-  note = Number(note);
-
-  // Vérifiez si la note est 0 et assignez null
-  if (note === 0) {
-    note = null;
-  }
+// Ajout d'une plateforme pour l'utilisateur
+router.post("/addPlatform", async (req, res) => {
+  const { token, platform } = req.body;
 
   try {
     await User.updateOne(
-      { token, "recommendedMovies.movie": movieId },
-      { $set: { "recommendedMovies.$.note": note } }
+      { token },
+      { $push: { "platforms": platform } }
     ).then(() => res.json({ result: true }));
   } catch (error) {
     res.json({ result: false, error });
   }
 });
 
-// Ajout d'une plateforme pour l'utilisateur
-router.post("/addPlatform", async (req, res) => {});
-
 // Suppression d'une plateforme pour l'utilisateur
-router.delete("/deletePlatform", async (req, res) => {});
+router.delete("/deletePlatform", async (req, res) => {
+  const { token, platform } = req.body;
+
+  try {
+    await User.updateOne(
+      { token },
+      { $pull: { "platforms": platform } }
+    ).then(() => res.json({ result: true }));
+  } catch (error) {
+    res.json({ result: false, error });
+  }
+});
 
 module.exports = router;
