@@ -196,7 +196,6 @@ const verifyInfos = (requiredField) => {
   };
 };
 
-export default verifyInfos;
 
 // Route pour obtenir les données utilisateur
 router.post("/getUserData", verifyInfos(["token"]), async (req, res) => {
