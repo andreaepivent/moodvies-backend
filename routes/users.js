@@ -161,7 +161,7 @@ const verifyInfos = (requiredField) => {
       ) {
         return res
           .status(400)
-          .json({ result: false, error: `${field} is invalid` });
+          .json({ result: false, error: `Please enter valid informations` });
       }
     }
     // Si il n'y a pas d'erreur nous envoyons les informations à la route
