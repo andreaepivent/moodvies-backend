@@ -46,11 +46,11 @@ router.post("/send-email", async (req, res) => {
     if (existingUser && existingUser.newsletter) {
       return res
         .status(409) // Code 409 pour conflit
-        .json({ message: "Email already registered to the newsletter" });
+        .json({ message: "Utilisateur déjà inscrit à la newsletter" });
     }
 
     // Récupérer le film par id_tmdb depuis la base de données
-    const movie = await Movie.findOne({ id_tmdb: 823464 }).lean();
+    const movie = await Movie.findOne({ id_tmdb: 823464 }).lean(); //  30827
 
     if (!movie) {
       return res.status(404).json({ message: "Film non trouvé" });
@@ -77,23 +77,23 @@ router.post("/send-email", async (req, res) => {
     const result = await User.updateOne(
       { email },
       { newsletter: true },
-      { upsert: true } // Si aucun utilisateur avec l'email donné n'existe, un nouveau document utilisateur sera créé 
+      { upsert: true } // Si aucun utilisateur avec l'email donné n'existe, un nouveau document utilisateur sera créé
     );
 
     // Vérifier si l'email a été trouvé et mis à jour
     if (result.nModified === 0 && !result.upserted) {
       return res
         .status(404)
-        .send("Email address not found and could not be created");
+        .send("L'adresse email n'a pas été trouvée et n'a pas pu être créée");
     }
 
     res.status(200).json({
-      message: "Successful e-mail and newsletter subscription",
+      message: "Inscription à la newsletter réussi",
     });
   } catch (error) {
-    console.error("Error sending email or updating newsletter", error);
+    console.error("Échec de l'envoi de l'e-mail ou de la mise à jour de l'abonnement", error);
     res.status(500).json({
-      message: "Failed to send e-mail or update subscription",
+      message: "",
     });
   }
 });
