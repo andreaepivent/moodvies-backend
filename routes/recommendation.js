@@ -36,7 +36,7 @@ router.post("/", async (req, res) => {
           $push: {
             recommendedMovies: {
               movie: recommendation._id,
-              userMood: { en: userMood, fr: moodTranslations[userMood] },
+              userMood: { en: moodTranslations[userMood], fr: userMood },
               date: timestamp,
               rank: index,
             },
