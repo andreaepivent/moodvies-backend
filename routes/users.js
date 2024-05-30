@@ -40,13 +40,13 @@ router.post("/signup", async (req, res) => {
   if (!validateUsername(req.body.username)) {
     return res.json({
       result: false,
-      error: "Invalid username format. Only letters and numbers are allowed.",
+      error: "Le format du nom d'utilisateur n'est pas valide. Seuls les lettres et les chiffres sont autorisés.",
     });
   }
 
   // Valide le format de l'email
   if (!validateEmail(req.body.email)) {
-    return res.json({ result: false, error: "Invalid email format" });
+    return res.json({ result: false, error: "Format d'email invalide" });
   }
   // Valide le format du mot de passe
   if (!validatePassword(req.body.password)) {
@@ -54,7 +54,7 @@ router.post("/signup", async (req, res) => {
     return res.json({
       result: false,
       error:
-        "Password must be at least 8 characters long and include at least one uppercase letter and one number",
+        "Le mot de passe doit comporter au moins 8 caractères, dont au moins une lettre majuscule et un chiffre.",
     });
   }
 
@@ -67,8 +67,15 @@ router.post("/signup", async (req, res) => {
       ],
     });
 
+  /*   if (existingUser) {
+      return res.json({ result: false, error: "L'utilisateur existe déjà" }); // Renvoie une réponse JSON avec une erreur si l'utilisateur existe déjà
+    }
+ */
     if (existingUser) {
-      return res.json({ result: false, error: "User already exists" }); // Renvoie une réponse JSON avec une erreur si l'utilisateur existe déjà
+      const errorMessage = existingUser.username.toLowerCase() === req.body.username.toLowerCase() 
+        ? "Le pseudo est déjà pris." 
+        : "L'email est déjà enregistré.";
+      return res.json({ result: false, error: errorMessage }); // Renvoie une réponse JSON avec une erreur spécifique si l'utilisateur existe déjà
     }
 
     // Hash le mot de passe avec bcrypt en utilisant un sel de 10
