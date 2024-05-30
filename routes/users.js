@@ -163,13 +163,13 @@ const verifyInfos = (requiredField) => {
       ) {
         return res
           .status(400)
-          .json({ result: false, error: `Please enter valid informations` });
+          .json({ result: false, error: `Entrez des informations valides` });
       } 
       // Si le champ testé correspond au champ email alors nous vérifions que la data reçu est bien au bon format
        if (field === "email" && !emailRegex.test(req.body[field])) {
         return res
           .status(400)
-          .json({ result: false, error: 'Please enter a valid email address' });
+          .json({ result: false, error: 'Entrez une adresse email valide' });
       }
     }
     // Si il n'y a pas d'erreur nous envoyons les informations à la route
@@ -187,7 +187,7 @@ router.post("/getUserData", verifyInfos(["token"]), async (req, res) => {
 
     if (!response) {
       // Si l'utilisateur n'est pas trouvé, renvoie une erreur 404
-      res.status(404).json({ result: false, error: "user not found" });
+      res.status(404).json({ result: false, error: "Aucun utilisateur trouvé" });
     }
 
     const userData = response;
@@ -220,7 +220,7 @@ router.put(
         res.json({ result: true, data: response });
       } else {
         // Si l'utilisateur n'est pas trouvé, renvoie une erreur 404
-        res.status(404).json({ result: false, error: "No user found" });
+        res.status(404).json({ result: false, error: "Aucun utilisateur trouvé" });
       }
     } catch (error) {
       // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
@@ -249,7 +249,7 @@ router.put(
         res.json({ result: true, data: response });
       } else {
         // Si l'utilisateur n'est pas trouvé, renvoie une erreur 404
-        res.status(404).json({ result: false, error: "No user found" });
+        res.status(404).json({ result: false, error: "Aucun utilisateur trouvé" });
       }
     } catch (error) {
       // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
