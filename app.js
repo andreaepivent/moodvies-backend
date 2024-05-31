@@ -20,7 +20,7 @@ const cors = require("cors");
 const corsOptions = {
   origin: function (origin, callback) {
     // Remplacee 'allowedOrigins' avec vos différents URLs front pouvant accéder au Backend
-    const allowedOrigins = ["http://localhost:3000", "http://localhost:3001", "https://site--moodvies--5xx8wnrqybfd.code.run/", "https://moodvies-frontend-aounwd7i9-andreaepvs-projects.vercel.app/"];
+    const allowedOrigins = ["http://localhost:3000", "http://localhost:3001", "https://site--moodvies--5xx8wnrqybfd.code.run/", "https://moodvies-frontend-aounwd7i9-andreaepvs-projects.vercel.app/", "https://moodvies-frontend-web-git-dev-andreaepvs-projects.vercel.app"];
     if (allowedOrigins.includes(origin) || !origin) {
       callback(null, true);
     } else {
