@@ -153,7 +153,7 @@ router.post("/customRec", async (req, res) => {
     const recommendations = await Movie.aggregate([
       { $match: query },
       { $sort: { popularity_score: -1 } },
-      { $sample: { size: 4 } },
+      { $sample: { size: 5 } },
     ]);
 
     // On met à jour les films recommandés pour l'utilisateur
