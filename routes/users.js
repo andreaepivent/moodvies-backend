@@ -40,7 +40,7 @@ router.post("/signup", async (req, res) => {
   if (!validateUsername(req.body.username)) {
     return res.json({
       result: false,
-      error: "Le format du nom d'utilisateur n'est pas valide. Seuls les lettres et les chiffres sont autorisés.",
+      error: "Le format du pseudo n'est pas valide. Seuls les lettres et les chiffres sont autorisés.",
     });
   }
 

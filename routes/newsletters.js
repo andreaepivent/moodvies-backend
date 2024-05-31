@@ -26,14 +26,14 @@ function formatDate(date) {
 }
 
 // ================================================
-// ================ subscribe route =================
+// ================ Post subscribe route =================
 // ================================================
 
 // Route pour s'abonner à la newsletter un email
 router.post("/send-email", async (req, res) => {
   try {
     // Extraire l'email du corps de la requête
-    const email = req.body.email;
+    const email  = req.body.email
 
     // Vérifier que l'email est fourni
     if (!validateEmail(email)) {
@@ -50,7 +50,7 @@ router.post("/send-email", async (req, res) => {
     }
 
     // Récupérer le film par id_tmdb depuis la base de données
-    const movie = await Movie.findOne({ id_tmdb: 823464 }).lean(); //  30827
+    const movie = await Movie.findOne({ id_tmdb: 14 }).lean(); //  30827
 
     if (!movie) {
       return res.status(404).json({ message: "Film non trouvé" });
@@ -91,7 +91,10 @@ router.post("/send-email", async (req, res) => {
       message: "Inscription à la newsletter réussi",
     });
   } catch (error) {
-    console.error("Échec de l'envoi de l'e-mail ou de la mise à jour de l'abonnement", error);
+    console.error(
+      "Échec de l'envoi de l'e-mail ou de la mise à jour de l'abonnement",
+      error
+    );
     res.status(500).json({
       message: "",
     });
@@ -99,7 +102,7 @@ router.post("/send-email", async (req, res) => {
 });
 
 // ================================================
-// ================ unsubscribe route =================
+// ================ Get unsubscribe route =================
 // ================================================
 
 // Route pour désabonner un utilisateur
@@ -133,6 +136,67 @@ router.get("/unsubscribe", async (req, res) => {
     const message = "Échec du désabonnement. Veuillez réessayer plus tard.";
     // Rendre la page EJS avec le message d'erreur
     res.render("unsubscribe", { message });
+  }
+});
+
+// ===================================================
+// ================ Post route weekly-email =================
+// ===================================================
+
+// Route pour envoyer un email à tous les abonnés de la newsletter
+router.post("/weekly-email", async (req, res) => {
+  const { movieId } = req.body;
+
+  try {
+    // Récupérer tous les utilisateurs abonnés à la newsletter
+    const users = await User.find({ newsletter: true });
+
+    if (users.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Aucun utilisateur abonné à la newsletter trouvé" });
+    }
+
+    // Récupérer le film via son objectID qui sera inclu dans l'email
+    const movie = await Movie.findOne({ _id: movieId }).lean(); 
+    if (!movie) {
+      return res.status(404).json({ message: "Film non trouvé" });
+    }
+
+    // Formater la date de sortie
+    movie.releaseDateFormatted = formatDate(movie.releaseDate);
+
+    // Envoyer l'email à chaque utilisateur
+    for (const user of users) {
+      const mailOptions = {
+        from: `"MOODVIES" <${process.env.NODEMAILER_EMAIL}>`,
+        to: user.email,
+        subject: `Proposition de Film: ${movie.title.fr || movie.title.en}`,
+        html: template({ movie, email: user.email }), // Passer le film et l'email au template
+      };
+
+      await transporter.sendMail(mailOptions);
+    }
+
+    // Créer un document dans la collection newsletter
+    const newsletterEntry = new Newsletter({
+      date: new Date(),
+      movie: movieId,
+    });
+    await newsletterEntry.save();
+
+    res.status(200).json({
+      message: "Emails envoyés et newsletter enregistrée avec succès",
+    });
+  } catch (error) {
+    console.error(
+      "Échec de l'envoi des e-mails ou de l'enregistrement de la newsletter",
+      error
+    );
+    res.status(500).json({
+      message:
+        "Une erreur est survenue lors de l'envoi des e-mails ou de l'enregistrement de la newsletter",
+    });
   }
 });
 
