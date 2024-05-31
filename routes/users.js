@@ -118,7 +118,7 @@ router.post("/signin", async (req, res) => {
     if (!checkBody(req.body, ["username", "password"])) {
       return res
         .status(400)
-        .json({ result: false, error: "Missing or empty fields" });
+        .json({ result: false, error: "Champs manquants ou vides" });
     }
     // Recherche de l'utilisateur par nom d'utilisateur (insensible à la casse)
     const user = await User.findOne({
@@ -128,7 +128,7 @@ router.post("/signin", async (req, res) => {
     if (!user) {
       return res
         .status(401)
-        .json({ result: false, error: "User not found or wrong password" });
+        .json({ result: false, error: "Utilisateur introuvable ou mot de passe erroné" });
     }
 
     // Comparaison du mot de passe fourni avec le mot de passe haché dans la base de données
@@ -137,7 +137,7 @@ router.post("/signin", async (req, res) => {
     if (!passwordMatch) {
       return res
         .status(401)
-        .json({ result: false, error: "User not found or wrong password" });
+        .json({ result: false, error: "Utilisateur introuvable ou mot de passe erroné" });
     }
 
     // Si l'authentification réussit, renvoie le token
