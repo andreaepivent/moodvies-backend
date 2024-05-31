@@ -153,52 +153,35 @@ router.post("/signin", async (req, res) => {
 });
 
 const verifyInfos = (requiredField) => {
-  return async (req, res, next) => {
-    // Définition d'une regex qui correspond à une chaine qui ne contient que des espaces vides
+  return (req, res, next) => {
+    // Définition d'une regex qui correspond à une chaîne qui ne contient que des espaces vides
     const regex = /^\s*$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // 
+    // Définition d'une regex pour valider le format des emails
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    // Pour chacune des propriétés de req.body passées en argument, nous bouclons pour vérifier si elle est undefined, null ou si elle match la regex
-    // auquel cas nous retournons une erreur 400
+    // Boucle à travers chaque champ requis passé en argument
     for (const field of requiredField) {
+      // Vérifie si le champ est indéfini, nul ou correspond à la regex des espaces vides
       if (
         req.body[field] === undefined ||
         req.body[field] === null ||
         regex.test(req.body[field])
       ) {
-        return res
-          .status(400)
-          .json({ result: false, error: `Entrez des informations valides pour ${field}` });
-      } 
-      // Si le champ testé correspond au champ email alors nous vérifions que la data reçue est bien au bon format
-      if (field === "email" && !emailRegex.test(req.body[field])) {
-        return res
-          .status(400)
-          .json({ result: false, error: 'Entrez une adresse email valide' });
-      }   
-    }
-    
-    // Vérifie si l'utilisateur existe déjà
-    try {
-      const existingUser = await User.findOne({
-        $or: [
-          { email: req.body["email"] },
-          { username: req.body["username"] }
-        ]
-      });
-
-      if (existingUser) {
-        return res
-          .status(400)
-          .json({ result: false, error: 'Email ou nom d\'utilisateur déjà utilisé' });
+        // Log l'erreur de validation pour le champ spécifique
+        console.log(`Erreur de validation pour le champ ${field}`);
+        // Retourne une réponse 400 avec un message d'erreur
+        return res.status(400).json({ result: false, error: `Entrez des informations valides` });
       }
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ result: false, error: 'Erreur serveur' });
+      // Si le champ est "email", vérifie qu'il correspond au format email
+      if (field === "email" && !emailRegex.test(req.body[field])) {
+        // Log l'erreur de validation pour le champ email
+        console.log('Erreur de validation pour le champ email');
+        // Retourne une réponse 400 avec un message d'erreur spécifique pour l'email
+        return res.status(400).json({ result: false, error: 'Entrez une adresse email valide' });
+      }
     }
 
-    // Si il n'y a pas d'erreur nous envoyons les informations à la route
+    // Si toutes les vérifications passent, appelle le middleware suivant
     next();
   };
 };
@@ -230,28 +213,54 @@ router.post("/getUserData", verifyInfos(["token"]), async (req, res) => {
 // Route pour modifier le profil de l'utilisateur
 router.put(
   "/editProfile",
-  verifyInfos(["token", "username", "email"]),
+  verifyInfos(["token", "username", "email"]), // Utilisation du middleware pour vérifier les informations requises
   async (req, res) => {
+    // Extraction des données du corps de la requête
     const { token, username, email } = req.body;
 
+    // Log des informations reçues pour la mise à jour du profil
+    console.log('Mise à jour du profil:', req.body);
+
     try {
+      // Vérifie si un utilisateur avec le même email ou nom d'utilisateur existe déjà, excluant l'utilisateur actuel basé sur le token
+      const existingUser = await User.findOne({
+        $or: [
+          { email: email },
+          { username: username }
+        ],
+        token: { $ne: token } // Exclut l'utilisateur actuel basé sur le token
+      });
+
+      if (existingUser) {
+        // Log si un utilisateur existant est trouvé
+        console.log('Utilisateur existant trouvé:', existingUser);
+        // Retourne une réponse 400 avec un message d'erreur si l'email ou le nom d'utilisateur est déjà utilisé
+        return res.status(400).json({ result: false, error: 'Email ou nom d\'utilisateur déjà utilisé' });
+      }
+
       // Met à jour les informations de l'utilisateur par le token fourni
       const response = await User.findOneAndUpdate(
         { token: token },
         { email: email, username: username },
-        { new: true }
+        { new: true } // Renvoie le document modifié
       );
 
       if (response) {
-        // Si l'utilisateur est trouvé et mis à jour, renvoie les nouvelles données
-        res.json({ result: true, data: response });
+        // Log si le profil a été mis à jour avec succès
+        console.log('Profil mis à jour:', response);
+        // Retourne une réponse avec les nouvelles données de l'utilisateur
+        return res.json({ result: true, data: response });
       } else {
-        // Si l'utilisateur n'est pas trouvé, renvoie une erreur 404
-        res.status(404).json({ result: false, error: "Aucun utilisateur trouvé" });
+        // Log si aucun utilisateur n'a été trouvé
+        console.log('Aucun utilisateur trouvé');
+        // Retourne une réponse 404 si l'utilisateur n'est pas trouvé
+        return res.status(404).json({ result: false, error: "Aucun utilisateur trouvé" });
       }
     } catch (error) {
-      // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
-      res.status(500).json({ result: false, error: error });
+      // Log en cas d'erreur serveur
+      console.error('Erreur serveur:', error);
+      // Retourne une réponse 500 avec un message d'erreur en cas de problème serveur
+      return res.status(500).json({ result: false, error: 'Erreur serveur' });
     }
   }
 );
