@@ -5,7 +5,15 @@ module.exports = (server) => {
   const io = socketIo(server, {
     cors: {
       origin: function (origin, callback) {
-        const allowedOrigins = [process.env.FRONTEND_URL]; // Stocker dans le env l'url front (local et déployé)
+        const allowedOrigins = [
+          "http://localhost:3000",
+          "http://localhost:3001",
+          "https://moodvies-frontend-web.vercel.app",
+          "https://site--moodvies--5xx8wnrqybfd.code.run/",
+          "https://moodvies-frontend-aounwd7i9-andreaepvs-projects.vercel.app",
+          "https://moodvies-frontend-web-git-dev-andreaepvs-projects.vercel.app",
+          "https://moodvies-frontend-web-lszq.vercel.app",
+        ]; // Stocker dans le env l'url front (local et déployé)
         if (allowedOrigins.includes(origin) || !origin) {
           callback(null, true);
         } else {
