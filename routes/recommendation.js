@@ -15,6 +15,15 @@ const countryCodes = {
   Espagnol: "ES",
 };
 
+// Middleware pour ajouter les en-têtes CORS
+router.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  next();
+});
+
 // Recommandation d'un film en fonction du mood de l'utilisateur et de l'option choisie
 router.post("/", async (req, res) => {
   const { token, userMood, option } = req.body;
