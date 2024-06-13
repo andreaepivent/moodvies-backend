@@ -26,6 +26,7 @@ router.post("/", async (req, res) => {
   }
 
   try {
+    console.log("ça fonctionne jusqu'ici")
     const recommendations = await recommendMovies(token, userMood, option);
 
     // On met à jour les films recommandés pour l'utilisateur
