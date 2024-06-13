@@ -26,20 +26,7 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    let recommendations = [];
-
-    if (userMood === "amour") {
-      const idList = [23169, 398818, 6023, 122906, 38];
-      recommendations = await Movie.find({ id_tmdb: { $in: idList } });
-    } else if (userMood === "peur") {
-      const idList = [9392, 419430, 176, 694, 170];
-      recommendations = await Movie.find({ id_tmdb: { $in: idList } });
-    } else if (userMood === "colère") {
-      const idList = [98, 1275536, 281957, 103, 752];
-      recommendations = await Movie.find({ id_tmdb: { $in: idList } });
-    } else {
-      recommendations = await recommendMovies(token, userMood, option);
-    }
+    const recommendations = await recommendMovies(token, userMood, option);
 
     // On met à jour les films recommandés pour l'utilisateur
     const addRecommendedMovies = recommendations.map((recommendation, index) =>
