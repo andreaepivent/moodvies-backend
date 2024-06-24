@@ -270,26 +270,35 @@ router.put(
   "/editPassword",
   verifyInfos(["currentPassword", "newPassword"]),
   async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
+    const { currentPassword, newPassword, token } = req.body;
 
     try {
-      // Met à jour le mot de passe de l'utilisateur par le mot de passe actuel fourni
-      const response = await User.findOneAndUpdate(
-        { password: currentPassword },
-        { password: newPassword },
-        { new: true }
-      );
+      const user = await User.findOne({token}); 
 
-      if (response) {
-        // Si l'utilisateur est trouvé et mis à jour, renvoie les nouvelles données
-        res.json({ result: true, data: response });
-      } else {
-        // Si l'utilisateur n'est pas trouvé, renvoie une erreur 404
-        res.status(404).json({ result: false, error: "Aucun utilisateur trouvé" });
+      if (!user) {
+        return res.status(404).json({ result: false, error: "Aucun utilisateur trouvé" });
       }
+
+      // Vérifie si le mot de passe actuel est correct
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+      if (!isMatch) {
+        return res.status(400).json({ result: false, error: "Mot de passe actuel incorrect" });
+      }
+
+      // Hache le nouveau mot de passe
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+      // Met à jour le mot de passe de l'utilisateur
+      user.password = hashedPassword;
+      await user.save();
+
+      // Renvoie les nouvelles données de l'utilisateur
+      res.json({ result: true, data: user });
     } catch (error) {
       // En cas d'erreur, renvoie une erreur 500 avec le message d'erreur
-      res.status(500).json({ result: false, error: error });
+      res.status(500).json({ result: false, error: error.message });
     }
   }
 );
