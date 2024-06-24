@@ -33,8 +33,9 @@ const corsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept"],
+  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
   methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
 };
 app.use(cors(corsOptions));
 // Configurer EJS comme moteur de template
